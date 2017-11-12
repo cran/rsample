@@ -1,8 +1,8 @@
 #' Nested or Double Resampling
 #'
-#' \code{nested_cv} can be used to take the results of one resampling procedure
+#' `nested_cv` can be used to take the results of one resampling procedure
 #'   and conduct further resamples within each split. Any type of resampling
-#'   used in \code{rsample} can be used.
+#'   used in `rsample` can be used.
 #'
 #' @details
 #' It is a bad idea to use bootstrapping as the outer resampling procedure (see
@@ -12,14 +12,14 @@
 #' @param data  A data frame.
 #' @param outside The initial resampling specification. This can be an already
 #'   created object or an expression of a new object (see the examples below).
-#'   If the latter is used, the \code{data} argument does not need to be
+#'   If the latter is used, the `data` argument does not need to be
 #'   specified and, if it is given, will be ignored.
 #' @param inside An expression for the type of resampling to be conducted
 #'   within the initial procedure.
-#' @return  An tibble with classe \code{nested_cv} and any other classes that
+#' @return  An tibble with classe `nested_cv` and any other classes that
 #'   outer resampling process normally contains. The results include a
-#'  column for the outer data split objects, one or more \code{id} columns,
-#'  and a column of nested tibbles called \code{inner_resamples} with the
+#'  column for the outer data split objects, one or more `id` columns,
+#'  and a column of nested tibbles called `inner_resamples` with the
 #'  additional resamples.
 #' @examples
 #' ## Using expressions for the resampling procedures:
@@ -100,19 +100,10 @@ inside_resample <- function(src, cl) {
 
 #' @importFrom tibble tibble
 #' @importFrom rlang is_lang
+#' @export
 print.nested_cv <- function(x, ...) {
-  details <- attributes(x)
-  
-  outer_label <- if (is_lang(details$outside))
-    deparse(details$outside)
-  else
-    paste0("`", deparse(details$outside), "`")
-  
-  cat("# Nested :",
-      outer_label,
-      "/",
-      deparse(details$inside),
-      "\n")
-  class(x) <- class(tibble(a = 1))
+  char_x <- paste("#", pretty(x))
+  cat(char_x, sep = "\n")
+  class(x) <- class(tibble())
   print(x)
 }

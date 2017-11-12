@@ -11,23 +11,23 @@ nested_cv(data, outside, inside)
 
 \item{outside}{The initial resampling specification. This can be an already
 created object or an expression of a new object (see the examples below).
-If the latter is used, the \code{data} argument does not need to be
+If the latter is used, the `data` argument does not need to be
 specified and, if it is given, will be ignored.}
 
 \item{inside}{An expression for the type of resampling to be conducted
 within the initial procedure.}
 }
 \value{
-An tibble with classe \code{nested_cv} and any other classes that
+An tibble with classe `nested_cv` and any other classes that
   outer resampling process normally contains. The results include a
- column for the outer data split objects, one or more \code{id} columns,
- and a column of nested tibbles called \code{inner_resamples} with the
+ column for the outer data split objects, one or more `id` columns,
+ and a column of nested tibbles called `inner_resamples` with the
  additional resamples.
 }
 \description{
-\code{nested_cv} can be used to take the results of one resampling procedure
+`nested_cv` can be used to take the results of one resampling procedure
   and conduct further resamples within each split. Any type of resampling
-  used in \code{rsample} can be used.
+  used in `rsample` can be used.
 }
 \details{
 It is a bad idea to use bootstrapping as the outer resampling procedure (see

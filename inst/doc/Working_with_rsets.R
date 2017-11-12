@@ -1,30 +1,30 @@
-## ----ex_setup, include=FALSE---------------------------------------------
+## ----ex_setup, include=FALSE------------------------------------------------------------
 knitr::opts_chunk$set(
   message = FALSE,
   digits = 3,
   collapse = TRUE,
   comment = "#>"
   )
-options(digits = 3)
+options(digits = 3, width = 90)
 library(ggplot2)
 theme_set(theme_bw())
 
-## ----attrition, message=FALSE--------------------------------------------
+## ----attrition, message=FALSE-----------------------------------------------------------
 library(rsample)
 data("attrition")
 names(attrition)
 table(attrition$Attrition)
 
-## ----form, message=FALSE-------------------------------------------------
+## ----form, message=FALSE----------------------------------------------------------------
 mod_form <- as.formula(Attrition ~ JobSatisfaction + Gender + MonthlyIncome)
 
-## ----model_vfold, message=FALSE------------------------------------------
+## ----model_vfold, message=FALSE---------------------------------------------------------
 library(rsample)
 set.seed(4622)
 rs_obj <- vfold_cv(attrition, V = 10, repeats = 10)
 rs_obj
 
-## ----lm_func-------------------------------------------------------------
+## ----lm_func----------------------------------------------------------------------------
 library(broom)
 ## splits will be the `rsplit` object with the 90/10 partition
 holdout_results <- function(splits, ...) {
@@ -44,53 +44,53 @@ holdout_results <- function(splits, ...) {
   res
 }
 
-## ----onefold, warning = FALSE--------------------------------------------
+## ----onefold, warning = FALSE-----------------------------------------------------------
 example <- holdout_results(rs_obj$splits[[1]],  mod_form)
 dim(example)
 dim(assessment(rs_obj$splits[[1]]))
 ## newly added columns:
 example[1:10, setdiff(names(example), names(attrition))]
 
-## ----model_purrr, warning=FALSE------------------------------------------
+## ----model_purrr, warning=FALSE---------------------------------------------------------
 library(purrr)
 rs_obj$results <- map(rs_obj$splits,
                       holdout_results,
                       mod_form)
 rs_obj
 
-## ----model_acc-----------------------------------------------------------
+## ----model_acc--------------------------------------------------------------------------
 rs_obj$accuracy <- map_dbl(rs_obj$results, function(x) mean(x$correct))
 summary(rs_obj$accuracy)
 
-## ----type_plot-----------------------------------------------------------
+## ----type_plot--------------------------------------------------------------------------
 ggplot(attrition, aes(x = Gender, y = MonthlyIncome)) + 
   geom_boxplot() + 
   scale_y_log10()
 
-## ----mean_diff-----------------------------------------------------------
+## ----mean_diff--------------------------------------------------------------------------
 median_diff <- function(splits) {
   x <- analysis(splits)
   median(x$MonthlyIncome[x$Gender == "Female"]) - 
       median(x$MonthlyIncome[x$Gender == "Male"])     
 }
 
-## ----boot_mean_diff------------------------------------------------------
+## ----boot_mean_diff---------------------------------------------------------------------
 set.seed(353)
 bt_resamples <- bootstraps(attrition, times = 500)
 
-## ----stats---------------------------------------------------------------
-bt_resamples$statistic <- map_dbl(bt_resamples$splits, median_diff)
+## ----stats------------------------------------------------------------------------------
+bt_resamples$wage_diff <- map_dbl(bt_resamples$splits, median_diff)
 
-## ----stats_plot----------------------------------------------------------
-ggplot(bt_resamples, aes(x = statistic)) + 
+## ----stats_plot-------------------------------------------------------------------------
+ggplot(bt_resamples, aes(x = wage_diff)) + 
   geom_line(stat = "density", adjust = 1.25) + 
   xlab("Difference in Median Monthly Income (Female - Male)")
 
-## ----ci------------------------------------------------------------------
-quantile(bt_resamples$statistic, 
+## ----ci---------------------------------------------------------------------------------
+quantile(bt_resamples$wage_diff, 
          probs = c(0.025, 0.500, 0.975))
 
-## ----coefs---------------------------------------------------------------
+## ----coefs------------------------------------------------------------------------------
 glm_coefs <- function(splits, ...) {
   ## use `analysis` or `as.data.frame` to get the analysis data
   mod <- glm(..., data = analysis(splits), family = binomial)
@@ -102,12 +102,12 @@ bt_resamples$betas <- map(.x = bt_resamples$splits,
 bt_resamples
 bt_resamples$betas[[1]]
 
-## ----tidy_rsplit---------------------------------------------------------
+## ----tidy_rsplit------------------------------------------------------------------------
 first_resample <- bt_resamples$splits[[1]]
 class(first_resample)
 tidy(first_resample)
 
-## ----tidy_rset-----------------------------------------------------------
+## ----tidy_rset--------------------------------------------------------------------------
 class(bt_resamples)
 tidy(bt_resamples)
 

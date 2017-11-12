@@ -71,3 +71,17 @@ test_that('bad args', {
   expect_error(mc_cv(iris, strata = 2))  
   expect_error(mc_cv(iris, strata = c("Species", "Species")))  
 })
+
+
+test_that('printing', {
+  expect_output(print(mc_cv(iris)))
+})
+
+
+test_that('rsplit labels', {
+  rs <- mc_cv(mtcars)
+  all_labs <- map_df(rs$splits, labels)
+  original_id <- rs[, grepl("^id", names(rs))]
+  expect_equal(all_labs, original_id)
+})
+

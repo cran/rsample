@@ -24,3 +24,14 @@ test_that('Loooooo', {
       length(x$in_id) == (nrow(dat1) - 1))  
   expect_true(all(retained))  
 })
+
+test_that('printing', {
+  expect_output(print(loo_cv(dat1)))
+})
+
+test_that('rsplit labels', {
+  rs <- loo_cv(mtcars)
+  all_labs <- map_df(rs$splits, labels)
+  original_id <- rs[, grepl("^id", names(rs))]
+  expect_equal(all_labs, original_id)
+})

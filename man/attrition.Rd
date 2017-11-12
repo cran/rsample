@@ -5,7 +5,7 @@
 \alias{attrition}
 \title{Job Attrition}
 \source{
-The IBM Watson Analytics Lab website \url{https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/}
+The IBM Watson Analytics Lab website https://www.ibm.com/communities/analytics/watson-analytics-blog/hr-employee-attrition/
 }
 \value{
 \item{attrition}{a data frame}

@@ -76,4 +76,14 @@ test_that('bad args', {
 })
 
 
+test_that('printing', {
+  expect_output(print(bootstraps(iris)))
+})
 
+
+test_that('rsplit labels', {
+  rs <- bootstraps(iris)
+  all_labs <- map_df(rs$splits, labels)
+  original_id <- rs[, grepl("^id", names(rs))]
+  expect_equal(all_labs, original_id)
+})
