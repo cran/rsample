@@ -1,19 +1,19 @@
 rsplit <- function(data, in_id, out_id) {
   if (!is.data.frame(data) & !is.matrix(data))
     stop("`data` must be a data frame.", call. = FALSE)
-  
+
   if (!is.integer(in_id) | any(in_id < 1))
     stop("`in_id` must be a positive integer vector.", call. = FALSE)
-  
+
   if(!all(is.na(out_id))) {
     if (!is.integer(out_id) | any(out_id < 1))
       stop("`out_id` must be a positive integer vector.", call. = FALSE)
   }
-  
+
   if (length(in_id) == 0)
-    stop("At least one row should be selected for the analysis set.", 
+    stop("At least one row should be selected for the analysis set.",
          call. = FALSE)
-  
+
   structure(
     list(
       data = data,
@@ -31,7 +31,7 @@ print.rsplit <- function(x, ...) {
       paste(length(complement(x)))
   else
     paste(length(x$out_id))
-  
+
   cat("<",
       length(x$in_id), "/",
       out_char, "/",
@@ -40,7 +40,7 @@ print.rsplit <- function(x, ...) {
 }
 
 #' @export
-as.integer.rsplit <- 
+as.integer.rsplit <-
   function(x, data = c("analysis", "assessment"), ...) {
     data <- match.arg(data)
     if (data == "analysis")
@@ -56,16 +56,23 @@ as.integer.rsplit <-
 
 
 #' Convert an `rsplit` object to a data frame
-#' 
+#'
 #' The analysis or assessment code can be returned as a data
 #'   frame (as dictated by the `data` argument) using
-#'   `as.data.frame.rsplit`. `analysis` and 
-#'   `assessment` are shortcuts. 
+#'   `as.data.frame.rsplit`. `analysis` and
+#'   `assessment` are shortcuts.
 #' @param x An `rsplit` object.
 #' @param row.names `NULL` or a character vector giving the row names for the data frame. Missing values are not allowed.
 #' @param optional A logical: should the column names of the data be checked for legality?
-#' @param data Either "analysis" or "assessment" to specify which data are returned. 
-#' @param ...	Additional arguments to be passed to or from methods. Not currently used. 
+#' @param data Either "analysis" or "assessment" to specify which data are returned.
+#' @param ...	Additional arguments to be passed to or from methods. Not currently used.
+#' @examples
+#' library(dplyr)
+#' set.seed(104)
+#' folds <- vfold_cv(mtcars)
+#'
+#' model_data_1 <- folds$splits[[1]] %>% analysis()
+#' holdout_data_1 <- folds$splits[[1]] %>% assessment()
 #' @export
 as.data.frame.rsplit <-
   function(x,
@@ -73,26 +80,32 @@ as.data.frame.rsplit <-
            optional = FALSE,
            data = "analysis",
            ...) {
-    
+
   if (!is.null(row.names))
     warning( "`row.names` is kept for consistency with the ",
-             "underlying class but non-NULL values will be ", 
+             "underlying class but non-NULL values will be ",
              "ignored.", call. = FALSE)
   if (optional)
     warning( "`optional` is kept for consistency with the ",
-             "underlying class but TRUE values will be ", 
+             "underlying class but TRUE values will be ",
              "ignored.", call. = FALSE)
   x$data[as.integer(x, data = data, ...), , drop = FALSE]
 }
 
-#' @rdname as.data.frame.rsplit  
+#' @rdname as.data.frame.rsplit
 #' @export
-analysis <- function(x, ...)
+analysis <- function(x, ...) {
+  if (!inherits(x, "rsplit"))
+    stop("`x` should be an `rsplit` object", call. = FALSE)
   as.data.frame(x, data = "analysis", ...)
-#' @rdname as.data.frame.rsplit  
+}
+#' @rdname as.data.frame.rsplit
 #' @export
-assessment <- function(x, ...)
+assessment <- function(x, ...){
+  if (!inherits(x, "rsplit"))
+    stop("`x` should be an `rsplit` object", call. = FALSE)
   as.data.frame(x, data = "assessment", ...)
+}
 
 #' @export
 dim.rsplit <- function(x, ...) {
@@ -114,12 +127,36 @@ obj_sum.rsplit <- function(x, ...) {
       paste(length(complement(x)))
   else
     paste(length(x$out_id))
-  
+
   paste0("rsplit [",
          length(x$in_id), "/",
-         out_char, "/",
-         nrow(x$data), "]")
+         out_char, "]")
 }
 
 
+#' @importFrom tibble type_sum
+#' @importFrom dplyr case_when
+#' @method type_sum rsplit
+#' @export
+type_sum.rsplit <- function(x, ...) {
+  out_char <-
+    if (all(is.na(x$out_id)))
+      format_n(length(complement(x)))
+  else
+    format_n(length(x$out_id))
 
+  paste0(
+    "split [",
+    format_n(length(x$in_id)), "/",
+    out_char, "]"
+  )
+}
+
+
+format_n <- function(x, digits = 1) {
+  case_when(
+    log10(x) < 3  ~ paste(x),
+    log10(x) >= 3 & log10(x) < 6 ~ paste0(round(x/1000, digits = digits), "K"),
+    TRUE ~ paste0(round(x/1000000, digits = digits), "M"),
+  )
+}

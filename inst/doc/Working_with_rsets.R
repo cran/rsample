@@ -21,11 +21,10 @@ mod_form <- as.formula(Attrition ~ JobSatisfaction + Gender + MonthlyIncome)
 ## ----model_vfold, message=FALSE---------------------------------------------------------
 library(rsample)
 set.seed(4622)
-rs_obj <- vfold_cv(attrition, V = 10, repeats = 10)
+rs_obj <- vfold_cv(attrition, v = 10, repeats = 10)
 rs_obj
 
 ## ----lm_func----------------------------------------------------------------------------
-library(broom)
 ## splits will be the `rsplit` object with the 90/10 partition
 holdout_results <- function(splits, ...) {
   # Fit the model to the 90%

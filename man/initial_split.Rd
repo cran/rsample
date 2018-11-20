@@ -2,11 +2,14 @@
 % Please edit documentation in R/initial_split.R
 \name{initial_split}
 \alias{initial_split}
+\alias{initial_time_split}
 \alias{training}
 \alias{testing}
 \title{Simple Training/Test Set Splitting}
 \usage{
 initial_split(data, prop = 3/4, strata = NULL, ...)
+
+initial_time_split(data, prop = 3/4, ...)
 
 training(x)
 
@@ -21,22 +24,28 @@ testing(x)
 
 \item{...}{Not currently used.}
 
-\item{x}{An `rsplit` object produced by `initial_split`}
+\item{x}{An \code{rsplit} object produced by \code{initial_split}}
 }
 \value{
-An `rset` object that can be used with the `training` and `testing` functions to extract the data in each split.
+An \code{rset} object that can be used with the \code{training} and \code{testing} functions to extract the data in each split.
 }
 \description{
-`initial_split` creates a single binary split of the data 
- into a training set and testing set. `training` and
- `testing` are used to extract the resulting data.
+\code{initial_split} creates a single binary split of the data into a training set
+and testing set. \code{initial_time_split} does the same, but takes the \emph{first} \code{prop}
+samples for training, instead of a a random selection. \code{training} and
+\code{testing} are used to extract the resulting data.
 }
 \details{
-The `strata` argument causes the random sampling to be conducted *within the stratification variable*. The can help ensure that the number of data points in the training data is equivalent to the proportions in the original data set.
+The \code{strata} argument causes the random sampling to be conducted \emph{within the stratification variable}. The can help ensure that the number of data points in the training data is equivalent to the proportions in the original data set.
 }
 \examples{
 set.seed(1353)
-car_split <- mc_cv(mtcars)
+car_split <- initial_split(mtcars)
 train_data <- training(car_split)
-test_data <- testing(car_split) 
+test_data <- testing(car_split)
+
+drinks_split <- initial_time_split(drinks)
+train_data <- training(drinks_split)
+test_data <- testing(car_split)
+c(max(train_data$date), min(test_data$date))  # no overlap
 }
