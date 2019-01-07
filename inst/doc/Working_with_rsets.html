@@ -379,7 +379,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">#&gt;  8 &lt;split [1.3K/147]&gt; Repeat01 Fold08</span></a>
 <a class="sourceLine" id="cb4-17" data-line-number="17"><span class="co">#&gt;  9 &lt;split [1.3K/147]&gt; Repeat01 Fold09</span></a>
 <a class="sourceLine" id="cb4-18" data-line-number="18"><span class="co">#&gt; 10 &lt;split [1.3K/147]&gt; Repeat01 Fold10</span></a>
-<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">#&gt; # ... with 90 more rows</span></a></code></pre></div>
+<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">#&gt; # … with 90 more rows</span></a></code></pre></div>
 <p>Now let’s write a function that will, for each resample:</p>
 <ol style="list-style-type: decimal">
 <li>obtain the analysis data set (i.e. the 90% used for modeling)</li>
@@ -408,24 +408,24 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>For example:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">example &lt;-<span class="st"> </span><span class="kw">holdout_results</span>(rs_obj<span class="op">$</span>splits[[<span class="dv">1</span>]],  mod_form)</a>
 <a class="sourceLine" id="cb6-2" data-line-number="2"><span class="kw">dim</span>(example)</a>
-<a class="sourceLine" id="cb6-3" data-line-number="3"><span class="co">#&gt; [1] 147  34</span></a>
+<a class="sourceLine" id="cb6-3" data-line-number="3"><span class="co">#&gt; [1] 147  35</span></a>
 <a class="sourceLine" id="cb6-4" data-line-number="4"><span class="kw">dim</span>(<span class="kw">assessment</span>(rs_obj<span class="op">$</span>splits[[<span class="dv">1</span>]]))</a>
 <a class="sourceLine" id="cb6-5" data-line-number="5"><span class="co">#&gt; [1] 147  31</span></a>
 <a class="sourceLine" id="cb6-6" data-line-number="6">## newly added columns:</a>
 <a class="sourceLine" id="cb6-7" data-line-number="7">example[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, <span class="kw">setdiff</span>(<span class="kw">names</span>(example), <span class="kw">names</span>(attrition))]</a>
-<a class="sourceLine" id="cb6-8" data-line-number="8"><span class="co">#&gt; # A tibble: 10 x 3</span></a>
-<a class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt;    .rownames .fitted correct</span></a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt;    &lt;chr&gt;       &lt;dbl&gt; &lt;lgl&gt;  </span></a>
-<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt;  1 7          -1.28  TRUE   </span></a>
-<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt;  2 14         -1.16  TRUE   </span></a>
-<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt;  3 32         -3.25  TRUE   </span></a>
-<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt;  4 54         -0.934 TRUE   </span></a>
-<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt;  5 72         -1.97  TRUE   </span></a>
-<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt;  6 74         -1.67  TRUE   </span></a>
-<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt;  7 76         -2.10  TRUE   </span></a>
-<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt;  8 138        -1.51  TRUE   </span></a>
-<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt;  9 142        -1.54  FALSE  </span></a>
-<a class="sourceLine" id="cb6-20" data-line-number="20"><span class="co">#&gt; 10 147        -1.58  FALSE</span></a></code></pre></div>
+<a class="sourceLine" id="cb6-8" data-line-number="8"><span class="co">#&gt; # A tibble: 10 x 4</span></a>
+<a class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt;    .rownames .fitted .se.fit correct</span></a>
+<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt;    &lt;chr&gt;       &lt;dbl&gt;   &lt;dbl&gt; &lt;lgl&gt;  </span></a>
+<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt;  1 7          -1.28    0.182 TRUE   </span></a>
+<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt;  2 14         -1.16    0.187 TRUE   </span></a>
+<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt;  3 32         -3.25    0.353 TRUE   </span></a>
+<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt;  4 54         -0.934   0.193 TRUE   </span></a>
+<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt;  5 72         -1.97    0.193 TRUE   </span></a>
+<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt;  6 74         -1.67    0.188 TRUE   </span></a>
+<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt;  7 76         -2.10    0.171 TRUE   </span></a>
+<a class="sourceLine" id="cb6-18" data-line-number="18"><span class="co">#&gt;  8 138        -1.51    0.165 TRUE   </span></a>
+<a class="sourceLine" id="cb6-19" data-line-number="19"><span class="co">#&gt;  9 142        -1.54    0.149 FALSE  </span></a>
+<a class="sourceLine" id="cb6-20" data-line-number="20"><span class="co">#&gt; 10 147        -1.58    0.150 FALSE</span></a></code></pre></div>
 <p>For this model, the <code>.fitted</code> value is the linear predictor in log-odds units.</p>
 <p>To compute this data set for each of the 100 resamples, we’ll use the <code>map</code> function from the <code>purrr</code> package:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">library</span>(purrr)</a>
@@ -437,17 +437,17 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb7-7" data-line-number="7"><span class="co">#&gt; # A tibble: 100 x 4</span></a>
 <a class="sourceLine" id="cb7-8" data-line-number="8"><span class="co">#&gt;    splits             id       id2    results            </span></a>
 <a class="sourceLine" id="cb7-9" data-line-number="9"><span class="co">#&gt;    &lt;list&gt;             &lt;chr&gt;    &lt;chr&gt;  &lt;list&gt;             </span></a>
-<a class="sourceLine" id="cb7-10" data-line-number="10"><span class="co">#&gt;  1 &lt;split [1.3K/147]&gt; Repeat01 Fold01 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-11" data-line-number="11"><span class="co">#&gt;  2 &lt;split [1.3K/147]&gt; Repeat01 Fold02 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-12" data-line-number="12"><span class="co">#&gt;  3 &lt;split [1.3K/147]&gt; Repeat01 Fold03 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-13" data-line-number="13"><span class="co">#&gt;  4 &lt;split [1.3K/147]&gt; Repeat01 Fold04 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-14" data-line-number="14"><span class="co">#&gt;  5 &lt;split [1.3K/147]&gt; Repeat01 Fold05 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-15" data-line-number="15"><span class="co">#&gt;  6 &lt;split [1.3K/147]&gt; Repeat01 Fold06 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-16" data-line-number="16"><span class="co">#&gt;  7 &lt;split [1.3K/147]&gt; Repeat01 Fold07 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-17" data-line-number="17"><span class="co">#&gt;  8 &lt;split [1.3K/147]&gt; Repeat01 Fold08 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-18" data-line-number="18"><span class="co">#&gt;  9 &lt;split [1.3K/147]&gt; Repeat01 Fold09 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-19" data-line-number="19"><span class="co">#&gt; 10 &lt;split [1.3K/147]&gt; Repeat01 Fold10 &lt;tibble [147 × 34]&gt;</span></a>
-<a class="sourceLine" id="cb7-20" data-line-number="20"><span class="co">#&gt; # ... with 90 more rows</span></a></code></pre></div>
+<a class="sourceLine" id="cb7-10" data-line-number="10"><span class="co">#&gt;  1 &lt;split [1.3K/147]&gt; Repeat01 Fold01 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-11" data-line-number="11"><span class="co">#&gt;  2 &lt;split [1.3K/147]&gt; Repeat01 Fold02 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-12" data-line-number="12"><span class="co">#&gt;  3 &lt;split [1.3K/147]&gt; Repeat01 Fold03 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-13" data-line-number="13"><span class="co">#&gt;  4 &lt;split [1.3K/147]&gt; Repeat01 Fold04 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-14" data-line-number="14"><span class="co">#&gt;  5 &lt;split [1.3K/147]&gt; Repeat01 Fold05 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-15" data-line-number="15"><span class="co">#&gt;  6 &lt;split [1.3K/147]&gt; Repeat01 Fold06 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-16" data-line-number="16"><span class="co">#&gt;  7 &lt;split [1.3K/147]&gt; Repeat01 Fold07 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-17" data-line-number="17"><span class="co">#&gt;  8 &lt;split [1.3K/147]&gt; Repeat01 Fold08 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-18" data-line-number="18"><span class="co">#&gt;  9 &lt;split [1.3K/147]&gt; Repeat01 Fold09 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-19" data-line-number="19"><span class="co">#&gt; 10 &lt;split [1.3K/147]&gt; Repeat01 Fold10 &lt;tibble [147 × 35]&gt;</span></a>
+<a class="sourceLine" id="cb7-20" data-line-number="20"><span class="co">#&gt; # … with 90 more rows</span></a></code></pre></div>
 <p>Now we can compute the accuracy values for all of the assessment data sets:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">rs_obj<span class="op">$</span>accuracy &lt;-<span class="st"> </span><span class="kw">map_dbl</span>(rs_obj<span class="op">$</span>results, <span class="cf">function</span>(x) <span class="kw">mean</span>(x<span class="op">$</span>correct))</a>
 <a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw">summary</span>(rs_obj<span class="op">$</span>accuracy)</a>
@@ -512,7 +512,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb15-21" data-line-number="21"><span class="co">#&gt;  8 &lt;split [1.5K/526]&gt; Bootstrap008      55   &lt;data.frame [1 × 6]&gt;</span></a>
 <a class="sourceLine" id="cb15-22" data-line-number="22"><span class="co">#&gt;  9 &lt;split [1.5K/531]&gt; Bootstrap009      32.5 &lt;data.frame [1 × 6]&gt;</span></a>
 <a class="sourceLine" id="cb15-23" data-line-number="23"><span class="co">#&gt; 10 &lt;split [1.5K/546]&gt; Bootstrap010     451   &lt;data.frame [1 × 6]&gt;</span></a>
-<a class="sourceLine" id="cb15-24" data-line-number="24"><span class="co">#&gt; # ... with 490 more rows</span></a>
+<a class="sourceLine" id="cb15-24" data-line-number="24"><span class="co">#&gt; # … with 490 more rows</span></a>
 <a class="sourceLine" id="cb15-25" data-line-number="25">bt_resamples<span class="op">$</span>betas[[<span class="dv">1</span>]]</a>
 <a class="sourceLine" id="cb15-26" data-line-number="26"><span class="co">#&gt;   (Intercept) JobSatisfaction.L JobSatisfaction.Q JobSatisfaction.C GenderMale</span></a>
 <a class="sourceLine" id="cb15-27" data-line-number="27"><span class="co">#&gt; 1      -0.828            -0.297            0.0979            -0.259      0.175</span></a>
@@ -539,7 +539,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb16-15" data-line-number="15"><span class="co">#&gt;  8    22 Analysis</span></a>
 <a class="sourceLine" id="cb16-16" data-line-number="16"><span class="co">#&gt;  9    23 Analysis</span></a>
 <a class="sourceLine" id="cb16-17" data-line-number="17"><span class="co">#&gt; 10    24 Analysis</span></a>
-<a class="sourceLine" id="cb16-18" data-line-number="18"><span class="co">#&gt; # ... with 1,460 more rows</span></a></code></pre></div>
+<a class="sourceLine" id="cb16-18" data-line-number="18"><span class="co">#&gt; # … with 1,460 more rows</span></a></code></pre></div>
 <p>and</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="kw">class</span>(bt_resamples)</a>
 <a class="sourceLine" id="cb17-2" data-line-number="2"><span class="co">#&gt; [1] &quot;bootstraps&quot; &quot;rset&quot;       &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</span></a>
@@ -557,7 +557,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <a class="sourceLine" id="cb17-14" data-line-number="14"><span class="co">#&gt;  8     1 Analysis Bootstrap013</span></a>
 <a class="sourceLine" id="cb17-15" data-line-number="15"><span class="co">#&gt;  9     1 Analysis Bootstrap014</span></a>
 <a class="sourceLine" id="cb17-16" data-line-number="16"><span class="co">#&gt; 10     1 Analysis Bootstrap015</span></a>
-<a class="sourceLine" id="cb17-17" data-line-number="17"><span class="co">#&gt; # ... with 734,990 more rows</span></a></code></pre></div>
+<a class="sourceLine" id="cb17-17" data-line-number="17"><span class="co">#&gt; # … with 734,990 more rows</span></a></code></pre></div>
 </div>
 
 <script type="text/javascript">
