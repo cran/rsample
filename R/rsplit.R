@@ -32,6 +32,7 @@ print.rsplit <- function(x, ...) {
   else
     paste(length(x$out_id))
 
+  cat("<Training/Testing/Total>\n")
   cat("<",
       length(x$in_id), "/",
       out_char, "/",
@@ -117,8 +118,6 @@ dim.rsplit <- function(x, ...) {
   )
 }
 
-
-#' @importFrom tibble obj_sum
 #' @method obj_sum rsplit
 #' @export
 obj_sum.rsplit <- function(x, ...) {
@@ -134,8 +133,6 @@ obj_sum.rsplit <- function(x, ...) {
 }
 
 
-#' @importFrom tibble type_sum
-#' @importFrom dplyr case_when
 #' @method type_sum rsplit
 #' @export
 type_sum.rsplit <- function(x, ...) {

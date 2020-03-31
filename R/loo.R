@@ -10,7 +10,6 @@
 #'  identifier.
 #' @examples
 #' loo_cv(mtcars)
-#' @importFrom purrr map
 #' @export
 loo_cv <- function(data, ...) {
   split_objs <- vfold_splits(data = data, v = nrow(data))
@@ -32,7 +31,7 @@ loo_cv <- function(data, ...) {
 print.loo_cv <- function(x, ...) {
   cat("#", pretty(x), "\n")
   class(x) <- class(x)[!(class(x) %in% c("loo_cv", "rset"))]
-  print(x)
+  print(x, ...)
 }
 
 change_class <- function(x) {

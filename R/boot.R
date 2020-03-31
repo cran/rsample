@@ -102,8 +102,6 @@ boot_complement <- function(ind, n) {
   list(analysis = ind, assessment = NA)
 }
 
-#' @importFrom purrr map map_df
-#' @importFrom tibble tibble
 boot_splits <-
   function(data,
            times = 25,
@@ -142,5 +140,5 @@ boot_splits <-
 print.bootstraps <- function(x, ...) {
   cat("#", pretty(x), "\n")
   class(x) <- class(x)[!(class(x) %in% c("bootstraps", "rset"))]
-  print(x)
+  print(x, ...)
 }

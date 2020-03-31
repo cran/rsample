@@ -41,7 +41,6 @@ check_tidy_names <- function(x, std_col) {
   invisible(TRUE)
 }
 
-#' @importFrom stats setNames
 check_tidy <- function(x, std_col = FALSE) {
   if (!is.list(x)) {
     stop(stat_fmt_err, call. = FALSE)
@@ -50,7 +49,8 @@ check_tidy <- function(x, std_col = FALSE) {
   # convert to data frame from list
   has_id <- any(names(x) == "id")
   if (has_id) {
-    x <- try(unnest(x), silent = TRUE)
+    list_cols <- names(x)[map_lgl(x, is_list)]
+    x <- try(tidyr::unnest(x, cols = list_cols), silent = TRUE)
   } else {
     x <- try(map_dfr(x, ~ .x), silent = TRUE)
   }
@@ -170,7 +170,9 @@ pctl_single <- function(stats, alpha = 0.05) {
 #' Calculate bootstrap confidence intervals using various methods.
 #' @param .data A data frame containing the bootstrap resamples created using
 #'  `bootstraps()`. For t- and BCa-intervals, the `apparent` argument
-#'  should be set to `TRUE`.
+#'  should be set to `TRUE`. Even if the `apparent` argument is set to
+#'  `TRUE` for the percentile method, the apparent data is never used in calculating
+#'  the percentile confidence interval.
 #' @param statistics An unquoted column name or `dplyr` selector that identifies
 #'  a single column in the data set that contains the indiviual bootstrap
 #'  estimates. This can be a list column of tidy tibbles (that contains columns
@@ -181,10 +183,13 @@ pctl_single <- function(stats, alpha = 0.05) {
 #' @return Each function returns a tibble with columns `.lower`,
 #'  `.estimate`, `.upper`, `.alpha`, `.method`, and `term`.
 #'  `.method` is the type of interval (eg. "percentile",
-#'  "student-t", or "BCa"). `term` is the name of the estimate.
+#'  "student-t", or "BCa"). `term` is the name of the estimate. Note
+#'  the `.estimate` returned from `int_pctl()`
+#'  is the mean of the estimates from the bootstrap resamples
+#'  and not the estimate from the apparent model.
 #' @details Percentile intervals are the standard method of
 #'  obtaining confidence intervals but require thousands of
-#'  resamples to be accurate. t-intervals may need fewer
+#'  resamples to be accurate. T-intervals may need fewer
 #'  resamples but require a corresponding variance estimate.
 #'  Bias-corrected and accelerated intervals require the original function
 #'  that was used to create the statistics of interest and are
@@ -207,7 +212,7 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'
 #' set.seed(52156)
 #' car_rs <-
-#'   bootstraps(mtcars, 1000, apparent = TRUE) %>%
+#'   bootstraps(mtcars, 500, apparent = TRUE) %>%
 #'   mutate(results = map(splits, lm_est))
 #'
 #' int_pctl(car_rs, results)
@@ -226,18 +231,13 @@ pctl_single <- function(stats, alpha = 0.05) {
 #' }
 #'
 #' set.seed(69325)
-#' bootstraps(iris, 1000, apparent = TRUE) %>%
+#' bootstraps(iris, 500, apparent = TRUE) %>%
 #'   mutate(correlations = map(splits, rank_corr)) %>%
 #'   int_pctl(correlations)
-#' @importFrom purrr map map_dfr
-#' @importFrom rlang enquo
-#' @importFrom dplyr mutate last ungroup group_by inner_join summarize do
-#' @importFrom tidyselect vars_select one_of
-#' @importFrom furrr future_map_dfr
 #' @export
 int_pctl <- function(.data, statistics, alpha = 0.05) {
 
-  check_rset(.data)
+  check_rset(.data, app = FALSE)
 
   .data <- .data %>% dplyr::filter(id != "Apparent")
 
@@ -261,7 +261,6 @@ int_pctl <- function(.data, statistics, alpha = 0.05) {
 # ------------------------------------------------------------------------------
 # t interval code
 
-#' @importFrom tibble tibble
 t_single <- function(stats, std_err, is_orig, alpha = 0.05) {
   # stats is a numeric vector of values
   # vars is a numeric vector of variances
@@ -308,10 +307,6 @@ t_single <- function(stats, std_err, is_orig, alpha = 0.05) {
 
 
 #' @rdname int_pctl
-#' @inheritParams int_pctl
-#' @importFrom dplyr as_tibble mutate
-#' @importFrom rlang quos
-#' @importFrom purrr map2 map_dfr
 #' @export
 int_t <- function(.data, statistics, alpha = 0.05) {
 
@@ -336,11 +331,6 @@ int_t <- function(.data, statistics, alpha = 0.05) {
 
 
 # ----------------------------------------------------------------
-
-#' @importFrom dplyr last
-#' @importFrom rlang exec
-#' @importFrom purrr pluck map_dbl map_dfr
-#' @importFrom stats qnorm pnorm
 
 bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
 
@@ -410,13 +400,11 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
 
 
 #' @rdname int_pctl
-#' @inheritParams int_pctl
 #' @param .fn A function to calculate statistic of interest. The
 #'  function should take an `rsplit` as the first argument and the `...` are
 #'  required.
 #' @param ... Arguments to pass to `.fn`.
 #' @references \url{https://tidymodels.github.io/rsample/articles/Applications/Intervals.html}
-#' @importFrom purrr map_dfr
 #' @export
 int_bca <- function(.data, statistics, alpha = 0.05, .fn, ...) {
 
@@ -436,11 +424,3 @@ int_bca <- function(.data, statistics, alpha = 0.05, .fn, ...) {
   vals <- bca_calc(stats, .data$splits[[1]]$data, alpha = alpha, .fn = .fn, ...)
   vals
 }
-
-# ----------------------------------------------------------------
-
-#' @importFrom utils globalVariables
-utils::globalVariables(
-  c("id", ".", ".estimate", ".lower", ".upper", "Z0", "Za", "Zl", "Zu", "a",
-    "cubed", "estimate", "orig", "p0", "squared", "term", "theta_0", "loo", "n")
-)

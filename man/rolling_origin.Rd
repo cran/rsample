@@ -4,8 +4,15 @@
 \alias{rolling_origin}
 \title{Rolling Origin Forecast Resampling}
 \usage{
-rolling_origin(data, initial = 5, assess = 1, cumulative = TRUE,
-  skip = 0, ...)
+rolling_origin(
+  data,
+  initial = 5,
+  assess = 1,
+  cumulative = TRUE,
+  skip = 0,
+  lag = 0,
+  ...
+)
 }
 \arguments{
 \item{data}{A data frame.}
@@ -21,6 +28,10 @@ size specified by \code{initial} at each resample?.}
 \item{skip}{A integer indicating how many (if any) \emph{additional} resamples
 to skip to thin the total amount of data points in the analysis resample.
 See the example below.}
+
+\item{lag}{A value to include an lag between the assessment
+and analysis set. This is useful if lagged predictors will be used
+during training and testing.}
 
 \item{...}{Not currently used.}
 }
@@ -59,6 +70,7 @@ dim(rolling_origin(ex_data, skip = 2, cumulative = FALSE))
 # which is especially useful for irregular series where a fixed window
 # is not useful. This example slides over 5 years at a time.
 library(dplyr)
+library(tidyr)
 data(drinks)
 
 drinks_annual <- drinks \%>\%

@@ -75,7 +75,6 @@ group_vfold_cv <- function(data, group = NULL, v = NULL, ...) {
            subclass = c("group_vfold_cv", "rset"))
 }
 
-#' @importFrom dplyr %>%
 group_vfold_splits <- function(data, group, v = NULL) {
   uni_groups <- unique(getElement(data, group))
   max_v <- length(uni_groups)
@@ -109,8 +108,5 @@ group_vfold_splits <- function(data, group, v = NULL) {
 print.group_vfold_cv <- function(x, ...) {
   cat("#", pretty(x), "\n")
   class(x) <- class(x)[!(class(x) %in% c("group_vfold_cv", "rset"))]
-  print(x)
+  print(x, ...)
 }
-
-#' @importFrom utils globalVariables
-utils::globalVariables("..index")

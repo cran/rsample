@@ -7,8 +7,6 @@
 #' @details
 #' It is a bad idea to use bootstrapping as the outer resampling procedure (see
 #'   the example below)
-#'
-#' @inheritParams vfold_cv
 #' @param data  A data frame.
 #' @param outside The initial resampling specification. This can be an already
 #'   created object or an expression of a new object (see the examples below).
@@ -47,11 +45,6 @@
 #'
 #' sum(grepl("Volvo 142E", rownames(inner_analysis)))
 #' sum(grepl("Volvo 142E", rownames(inner_assess)))
-
-#' @importFrom rlang is_call
-#' @importFrom purrr map
-#' @importFrom dplyr bind_cols
-#' @importFrom methods formalArgs
 #' @export
 nested_cv <- function(data, outside, inside)  {
   nest_args <- formalArgs(nested_cv)
@@ -98,12 +91,10 @@ inside_resample <- function(src, cl) {
   eval(cl)
 }
 
-#' @importFrom tibble tibble
-#' @importFrom rlang is_call
 #' @export
 print.nested_cv <- function(x, ...) {
   char_x <- paste("#", pretty(x))
   cat(char_x, sep = "\n")
   class(x) <- class(tibble())
-  print(x)
+  print(x, ...)
 }

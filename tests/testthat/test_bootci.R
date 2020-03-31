@@ -40,7 +40,7 @@ bt_norm <-
   )
 
 test_that('Bootstrap estimate of mean is close to estimate of mean from normal distribution',{
-
+  skip_on_cran()
   single_pct_res <- int_pctl(bt_norm, stats)
 
   single_t_res <- int_t(bt_norm, stats)
@@ -50,7 +50,7 @@ test_that('Bootstrap estimate of mean is close to estimate of mean from normal d
   expect_equal(ttest$conf.low,
                single_pct_res$.lower,
                tolerance = 0.01)
-  expect_equal(ttest$estimate,
+  expect_equal(unname(ttest$estimate),
                single_pct_res$.estimate,
                tolerance = 0.01)
   expect_equal(ttest$conf.high,
@@ -60,7 +60,7 @@ test_that('Bootstrap estimate of mean is close to estimate of mean from normal d
   expect_equal(ttest$conf.low,
                single_t_res$.lower,
                tolerance = 0.01)
-  expect_equal(ttest$estimate,
+  expect_equal(unname(ttest$estimate),
                single_t_res$.estimate,
                tolerance = 0.01)
   expect_equal(ttest$conf.high,
@@ -70,7 +70,7 @@ test_that('Bootstrap estimate of mean is close to estimate of mean from normal d
   expect_equal(ttest$conf.low,
                single_bca_res$.lower,
                tolerance = 0.01)
-  expect_equal(ttest$estimate,
+  expect_equal(unname(ttest$estimate),
                single_bca_res$.estimate,
                tolerance = 0.01)
   expect_equal(ttest$conf.high,
@@ -139,17 +139,26 @@ test_that('Upper & lower confidence interval does not contain NA', {
     mutate(res = map(splits, bad_stats))
 
   expect_error(
-    int_pctl(bt_resamples, res),
+    expect_warning(
+      int_pctl(bt_resamples, res),
+      "at least 1000 non-missing"
+    ),
     "missing values"
   )
 
   expect_error(
-    int_t(bt_resamples, res),
+    expect_warning(
+      int_t(bt_resamples, res),
+      "at least 1000 non-missing"
+    ),
     "missing values"
   )
 
   expect_error(
-    int_bca(bt_resamples, res, .fn = bad_stats),
+    expect_warning(
+      int_bca(bt_resamples, res, .fn = bad_stats),
+      "at least 1000 non-missing"
+    ),
     "missing values"
   )
 
