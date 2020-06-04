@@ -7,9 +7,9 @@
 #'  to V.
 #' @details
 #' The `strata` argument causes the random sampling to be conducted *within
-#'  the stratification variable*. The can help ensure that the number of data
+#'  the stratification variable*. This can help ensure that the number of data
 #'  points in the analysis data is equivalent to the proportions in the original
-#'  data set.
+#'  data set. (Strata below 10% of the total are pooled together.)
 #' When more than one repeat is requested, the basic V-fold cross-validation
 #'  is conducted each time. For example, if three repeats are used with `v =
 #'  10`, there are a total of 30 splits which as three groups of 10 that are
@@ -114,15 +114,15 @@ vfold_splits <- function(data, v = 10, strata = NULL, breaks = 4) {
   if (is.null(strata)) {
     folds <- sample(rep(1:v, length.out = n))
     idx <- seq_len(n)
-    indices <- split(idx, folds)
+    indices <- split_unnamed(idx, folds)
   } else {
     stratas <- tibble::tibble(idx = 1:n,
                               strata = make_strata(getElement(data, strata),
                                                    breaks = breaks))
-    stratas <- split(stratas, stratas$strata)
+    stratas <- split_unnamed(stratas, stratas$strata)
     stratas <- purrr::map(stratas, add_vfolds, v = v)
     stratas <- dplyr::bind_rows(stratas)
-    indices <- split(stratas$idx, stratas$folds)
+    indices <- split_unnamed(stratas$idx, stratas$folds)
   }
 
   indices <- lapply(indices, vfold_complement, n = n)

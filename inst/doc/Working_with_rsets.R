@@ -11,7 +11,7 @@ theme_set(theme_bw())
 
 ## ----attrition, message=FALSE-----------------------------------------------------------
 library(rsample)
-data("attrition")
+data("attrition", package = "modeldata")
 names(attrition)
 table(attrition$Attrition)
 
@@ -87,7 +87,7 @@ ggplot(bt_resamples, aes(x = wage_diff)) +
 
 ## ----ci---------------------------------------------------------------------------------
 quantile(bt_resamples$wage_diff, 
-         probs = c(0.025, 0.500, 0.975))
+         probs = c(0.025, 0.975))
 
 ## ----coefs------------------------------------------------------------------------------
 glm_coefs <- function(splits, ...) {

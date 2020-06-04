@@ -6,7 +6,7 @@
 #' @details The `strata` argument causes the random sampling to be conducted
 #'  *within the stratification variable*. This can help ensure that the number of
 #'  data points in the analysis data is equivalent to the proportions in the
-#'  original data set.
+#'  original data set. (Strata below 10% of the total are pooled together.)
 #' @inheritParams vfold_cv
 #' @param prop The proportion of data to be retained for modeling/analysis.
 #' @param strata A variable that is used to conduct stratified sampling to
@@ -64,7 +64,7 @@ print.validation_split <- function(x, ...) {
 
 
 #' @export
-print.rsplit <- function(x, ...) {
+print.val_split<- function(x, ...) {
 
   if (all(is.na(x$out_id))) {
     out_char <- paste(length(complement(x)))

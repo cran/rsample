@@ -12,8 +12,9 @@
 #'  bootstrap results.
 #' The `strata` argument is based on a similar argument in the random forest
 #'  package were the bootstrap samples are conducted *within the stratification
-#'  variable*. The can help ensure that the number of data points in the
+#'  variable*. This can help ensure that the number of data points in the
 #'  bootstrap sample is equivalent to the proportions in the original data set.
+#'  (Strata below 10% of the total are pooled together.)
 #' @inheritParams vfold_cv
 #' @param times The number of bootstrap samples.
 #' @param strata A variable that is used to conduct stratified sampling. When
@@ -116,7 +117,7 @@ boot_splits <-
     stratas <- tibble::tibble(idx = 1:n,
                               strata = make_strata(getElement(data, strata),
                                                    breaks = breaks))
-    stratas <- split(stratas, stratas$strata)
+    stratas <- split_unnamed(stratas, stratas$strata)
     stratas <-
       purrr::map_df(
         stratas,
@@ -125,7 +126,7 @@ boot_splits <-
         times = times,
         replace = TRUE
       )
-    indices <- split(stratas$idx, stratas$rs_id)
+    indices <- split_unnamed(stratas$idx, stratas$rs_id)
   }
 
   indices <- lapply(indices, boot_complement, n = n)

@@ -47,9 +47,9 @@ set and testing set. \code{initial_time_split} does the same, but takes the
 }
 \details{
 The \code{strata} argument causes the random sampling to be conducted
-\emph{within the stratification variable}. The can help ensure that the number of
-data points in the training data is equivalent to the proportions in the
-original data set.
+\emph{within the stratification variable}. This can help ensure that the number
+of data points in the training data is equivalent to the proportions in the
+original data set. (Strata below 10\% of the total are pooled together.)
 }
 \examples{
 set.seed(1353)
@@ -57,6 +57,7 @@ car_split <- initial_split(mtcars)
 train_data <- training(car_split)
 test_data <- testing(car_split)
 
+data(drinks, package = "modeldata")
 drinks_split <- initial_time_split(drinks)
 train_data <- training(drinks_split)
 test_data <- testing(drinks_split)
