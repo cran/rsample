@@ -35,6 +35,12 @@ new_rset <-  function(splits, ids, attrib = NULL,
     }
   }
 
+  where_rsplits <- vapply(splits[["splits"]], is_rsplit, logical(1))
+
+  if (!all(where_rsplits)) {
+    rlang::abort("Each element of `splits` must be an `rsplit` object.")
+  }
+
   if (nrow(ids) != nrow(splits)) {
     rlang::abort("Split and ID vectors have different lengths.")
   }
@@ -44,7 +50,11 @@ new_rset <-  function(splits, ids, attrib = NULL,
   # id can be known just based on the `rsplit` object. This can then be
   # accessed using the `labels` method for `rsplits`
 
-  splits$splits <- map2(splits$splits, split_unnamed(ids, 1:nrow(ids)), add_id)
+  splits$splits <- map2(
+    splits$splits,
+    split_unnamed(ids, rlang::seq2(1L, nrow(ids))),
+    add_id
+  )
 
   res <- bind_cols(splits, ids)
 

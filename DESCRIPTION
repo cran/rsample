@@ -1,6 +1,6 @@
 Package: rsample
 Title: General Resampling Infrastructure
-Version: 0.0.7
+Version: 0.0.8
 Authors@R: c(
     person(given = "Max",    family = "Kuhn",    email = "max@rstudio.com",      role = c("aut", "cre")),
     person(given = "Fanny",  family = "Chow",    email = "fannybchow@gmail.com", role = c("aut")),
@@ -9,10 +9,11 @@ Authors@R: c(
 Maintainer: Max Kuhn <max@rstudio.com>
 Description: Classes and functions to create and summarize different types of resampling objects (e.g. bootstrap, cross-validation). 
 Imports: dplyr (>= 0.8.5), purrr, tibble, rlang (>= 0.4.0), methods,
-        generics, utils, tidyselect, furrr, tidyr, vctrs (>= 0.3.0)
+        generics, utils, tidyselect, furrr, tidyr, vctrs (>= 0.3.0),
+        modeldata, slider (>= 0.1.5), ellipsis
 Depends: R (>= 3.2)
 Suggests: ggplot2, testthat, rmarkdown, knitr, AmesHousing, recipes (>=
-        0.1.4), broom, xml2, covr, modeldata
+        0.1.4), broom, xml2, covr
 URL: https://rsample.tidymodels.org,
         https://github.com/tidymodels/rsample
 BugReports: https://github.com/tidymodels/rsample/issues
@@ -20,12 +21,12 @@ License: GPL-2
 Encoding: UTF-8
 VignetteBuilder: knitr
 LazyData: true
-RoxygenNote: 7.1.0.9000
+RoxygenNote: 7.1.1.9000
 NeedsCompilation: no
-Packaged: 2020-06-04 02:44:05 UTC; max
+Packaged: 2020-09-23 16:08:48 UTC; max
 Author: Max Kuhn [aut, cre],
   Fanny Chow [aut],
   Hadley Wickham [aut],
   RStudio [cph]
 Repository: CRAN
-Date/Publication: 2020-06-04 07:40:03 UTC
+Date/Publication: 2020-09-23 17:20:03 UTC

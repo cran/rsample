@@ -174,7 +174,7 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'  `TRUE` for the percentile method, the apparent data is never used in calculating
 #'  the percentile confidence interval.
 #' @param statistics An unquoted column name or `dplyr` selector that identifies
-#'  a single column in the data set that contains the indiviual bootstrap
+#'  a single column in the data set that contains the individual bootstrap
 #'  estimates. This can be a list column of tidy tibbles (that contains columns
 #'  `term` and `estimate`) or a simple numeric column. For t-intervals, a
 #'  standard tidy column (usually called `std.err`) is required.
@@ -200,6 +200,7 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'  doi:10.1017/CBO9780511802843
 #'
 #' @examples
+#' \donttest{
 #' library(broom)
 #' library(dplyr)
 #' library(purrr)
@@ -224,20 +225,25 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'   dat <- analysis(split)
 #'   tibble(
 #'     term = "corr",
-#'     estimate = cor(dat$Sepal.Length, dat$Sepal.Width, method = "spearman"),
+#'     estimate = cor(dat$sqft, dat$price, method = "spearman"),
 #'     # don't know the analytical std.err so no t-intervals
 #'     std.err = NA_real_
 #'   )
 #' }
 #'
 #' set.seed(69325)
-#' bootstraps(iris, 500, apparent = TRUE) %>%
+#' data(Sacramento, package = "modeldata")
+#' bootstraps(Sacramento, 1000, apparent = TRUE) %>%
 #'   mutate(correlations = map(splits, rank_corr)) %>%
 #'   int_pctl(correlations)
+#' }
 #' @export
 int_pctl <- function(.data, statistics, alpha = 0.05) {
 
   check_rset(.data, app = FALSE)
+  if (length(alpha) != 1 || !is.numeric(alpha)) {
+    abort("`alpha` must be a single numeric value.")
+  }
 
   .data <- .data %>% dplyr::filter(id != "Apparent")
 
@@ -311,6 +317,9 @@ t_single <- function(stats, std_err, is_orig, alpha = 0.05) {
 int_t <- function(.data, statistics, alpha = 0.05) {
 
   check_rset(.data)
+  if (length(alpha) != 1 || !is.numeric(alpha)) {
+    abort("`alpha` must be a single numeric value.")
+  }
 
   column_name <- tidyselect::vars_select(names(.data), !!enquo(statistics))
   if (length(column_name) != 1) {
@@ -340,7 +349,7 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
   }
 
   ### Estimating Z0 bias-correction
-  bias_corr_stats <- get_p0(stats)
+  bias_corr_stats <- get_p0(stats, alpha = alpha)
 
   # need the original data frame here
   loo_rs <- loo_cv(orig_data)
@@ -409,6 +418,9 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
 int_bca <- function(.data, statistics, alpha = 0.05, .fn, ...) {
 
   check_rset(.data)
+  if (length(alpha) != 1 || !is.numeric(alpha)) {
+    abort("`alpha` must be a single numeric value.")
+  }
 
   has_dots(.fn)
 

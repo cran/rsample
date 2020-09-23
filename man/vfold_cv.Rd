@@ -25,7 +25,7 @@ a numeric stratification variable.}
 \value{
 A tibble with classes \code{vfold_cv}, \code{rset}, \code{tbl_df}, \code{tbl}, and
 \code{data.frame}. The results include a column for the data split objects and
-one or more identification variables. For a single repeats, there will be
+one or more identification variables. For a single repeat, there will be
 one column called \code{id} that has a character string with the fold identifier.
 For repeats, \code{id} is the repeat number and an additional column called \code{id2}
 that contains the fold information (within repeat).
@@ -51,29 +51,29 @@ vfold_cv(mtcars, v = 10)
 vfold_cv(mtcars, v = 10, repeats = 2)
 
 library(purrr)
-iris2 <- iris[1:130, ]
+data(wa_churn, package = "modeldata")
 
 set.seed(13)
-folds1 <- vfold_cv(iris2, v = 5)
+folds1 <- vfold_cv(wa_churn, v = 5)
 map_dbl(folds1$splits,
         function(x) {
-          dat <- as.data.frame(x)$Species
-          mean(dat == "virginica")
+          dat <- as.data.frame(x)$churn
+          mean(dat == "Yes")
         })
 
 set.seed(13)
-folds2 <- vfold_cv(iris2, strata = "Species", v = 5)
+folds2 <- vfold_cv(wa_churn, strata = "churn", v = 5)
 map_dbl(folds2$splits,
         function(x) {
-          dat <- as.data.frame(x)$Species
-          mean(dat == "virginica")
+          dat <- as.data.frame(x)$churn
+          mean(dat == "Yes")
         })
 
 set.seed(13)
-folds3 <- vfold_cv(iris2, strata = "Petal.Length", breaks = 6, v = 5)
+folds3 <- vfold_cv(wa_churn, strata = "tenure", breaks = 6, v = 5)
 map_dbl(folds3$splits,
         function(x) {
-          dat <- as.data.frame(x)$Species
-          mean(dat == "virginica")
+          dat <- as.data.frame(x)$churn
+          mean(dat == "Yes")
         })
 }

@@ -20,7 +20,7 @@ should be set to \code{TRUE}. Even if the \code{apparent} argument is set to
 the percentile confidence interval.}
 
 \item{statistics}{An unquoted column name or \code{dplyr} selector that identifies
-a single column in the data set that contains the indiviual bootstrap
+a single column in the data set that contains the individual bootstrap
 estimates. This can be a list column of tidy tibbles (that contains columns
 \code{term} and \code{estimate}) or a simple numeric column. For t-intervals, a
 standard tidy column (usually called \code{std.err}) is required.
@@ -56,6 +56,7 @@ that was used to create the statistics of interest and are
 computationally taxing.
 }
 \examples{
+\donttest{
 library(broom)
 library(dplyr)
 library(purrr)
@@ -80,16 +81,18 @@ rank_corr <- function(split) {
   dat <- analysis(split)
   tibble(
     term = "corr",
-    estimate = cor(dat$Sepal.Length, dat$Sepal.Width, method = "spearman"),
+    estimate = cor(dat$sqft, dat$price, method = "spearman"),
     # don't know the analytical std.err so no t-intervals
     std.err = NA_real_
   )
 }
 
 set.seed(69325)
-bootstraps(iris, 500, apparent = TRUE) \%>\%
+data(Sacramento, package = "modeldata")
+bootstraps(Sacramento, 1000, apparent = TRUE) \%>\%
   mutate(correlations = map(splits, rank_corr)) \%>\%
   int_pctl(correlations)
+}
 }
 \references{
 Davison, A., & Hinkley, D. (1997). \emph{Bootstrap Methods and their

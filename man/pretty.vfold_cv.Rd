@@ -5,12 +5,16 @@
 \alias{pretty.loo_cv}
 \alias{pretty.apparent}
 \alias{pretty.rolling_origin}
+\alias{pretty.sliding_window}
+\alias{pretty.sliding_index}
+\alias{pretty.sliding_period}
 \alias{pretty.mc_cv}
 \alias{pretty.validation_split}
 \alias{pretty.nested_cv}
 \alias{pretty.bootstraps}
 \alias{pretty.group_vfold_cv}
-\title{Short Decriptions of rsets}
+\alias{pretty.manual_rset}
+\title{Short Descriptions of rsets}
 \usage{
 \method{pretty}{vfold_cv}(x, ...)
 
@@ -19,6 +23,12 @@
 \method{pretty}{apparent}(x, ...)
 
 \method{pretty}{rolling_origin}(x, ...)
+
+\method{pretty}{sliding_window}(x, ...)
+
+\method{pretty}{sliding_index}(x, ...)
+
+\method{pretty}{sliding_period}(x, ...)
 
 \method{pretty}{mc_cv}(x, ...)
 
@@ -29,6 +39,8 @@
 \method{pretty}{bootstraps}(x, ...)
 
 \method{pretty}{group_vfold_cv}(x, ...)
+
+\method{pretty}{manual_rset}(x, ...)
 }
 \arguments{
 \item{x}{An \code{rset} object}
@@ -39,6 +51,6 @@
 A character vector.
 }
 \description{
-Produce a chracter vector of describing the resampling method.
+Produce a character vector describing the resampling method.
 }
 \keyword{internal}

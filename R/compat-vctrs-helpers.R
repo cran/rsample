@@ -76,6 +76,10 @@ rset_attribute_dictionary <- list(
   nested_cv        = c("outside", "inside"),
   validation_split = c("prop", "strata"),
   rolling_origin   = c("initial", "assess", "cumulative", "skip", "lag"),
+  sliding_window   = c("lookback", "assess_start", "assess_stop", "complete", "step", "skip"),
+  sliding_index    = c("lookback", "assess_start", "assess_stop", "complete", "step", "skip"),
+  sliding_period   = c("period", "lookback", "assess_start", "assess_stop", "complete", "step", "skip", "every", "origin"),
+  manual_rset      = character(),
   apparent         = character(),
   tbl_df           = character()
 )
@@ -104,7 +108,11 @@ rset_attributes <- function(x) {
 # ------------------------------------------------------------------------------
 
 test_data <- function() {
-  data.frame(x = 1:50, y = rep(c(1, 2), each = 25))
+  data.frame(
+    x = 1:50,
+    y = rep(c(1, 2), each = 25),
+    index = as.Date(0:49, origin = "1970-01-01")
+  )
 }
 
 # Keep this list up to date with known rset subclasses for testing.
@@ -120,6 +128,10 @@ delayedAssign("rset_subclasses", {
     nested_cv        = nested_cv(test_data(), outside = vfold_cv(v = 3), inside = bootstraps(times = 5)),
     validation_split = validation_split(test_data()),
     rolling_origin   = rolling_origin(test_data()),
+    sliding_window   = sliding_window(test_data()),
+    sliding_index    = sliding_index(test_data(), index),
+    sliding_period   = sliding_period(test_data(), index, "week"),
+    manual_rset      = manual_rset(bootstraps(test_data())$splits[1:2], c("ID1", "ID2")),
     apparent         = apparent(test_data())
   )
 })

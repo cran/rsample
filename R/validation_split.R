@@ -20,7 +20,7 @@
 #'  and a column called `id` that has a character string with the resample
 #'  identifier.
 #' @examples
-#' validation_split(iris, prop = .9)
+#' validation_split(mtcars, prop = .9)
 #' @export
 validation_split <- function(data, prop = 3/4, strata = NULL, breaks = 4, ...) {
 
@@ -40,7 +40,7 @@ validation_split <- function(data, prop = 3/4, strata = NULL, breaks = 4, ...) {
               strata = strata,
               breaks = breaks)
 
-  ## We remove the holdout indicies since it will save space and we can
+  ## We remove the holdout indices since it will save space and we can
   ## derive them later when they are needed.
 
   split_objs$splits <- map(split_objs$splits, rm_out)
