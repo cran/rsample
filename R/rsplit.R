@@ -27,7 +27,7 @@ rsplit <- function(data, in_id, out_id) {
 #' @export
 print.rsplit <- function(x, ...) {
   out_char <-
-    if (all(is.na(x$out_id)))
+    if (is_missing_out_id(x))
       paste(length(complement(x)))
   else
     paste(length(x$out_id))
@@ -47,7 +47,7 @@ as.integer.rsplit <-
     if (data == "analysis")
       out <- x$in_id
     else {
-      out <- if (all(is.na(x$out_id)))
+      out <- if (is_missing_out_id(x))
         complement(x)
       else
         x$out_id
@@ -90,6 +90,18 @@ as.data.frame.rsplit <-
     warning( "`optional` is kept for consistency with the ",
              "underlying class but TRUE values will be ",
              "ignored.", call. = FALSE)
+  if (!is.null(x$col_id)) {
+    if (identical(data, "assessment")) {
+      rsplit_class <- class(x)[[2]]
+      msg <- paste0("There is no assessment data set for an `rsplit` object",
+                    " with class `", rsplit_class, "`.")
+      rlang::abort(msg)
+    }
+    permuted_col <-
+      x$data[as.integer(x, data = data, ...), x$col_id, drop = FALSE]
+    x$data[, x$col_id] <- permuted_col
+    return(x$data)
+  }
   x$data[as.integer(x, data = data, ...), , drop = FALSE]
 }
 
@@ -122,12 +134,12 @@ dim.rsplit <- function(x, ...) {
 #' @export
 obj_sum.rsplit <- function(x, ...) {
   out_char <-
-    if (all(is.na(x$out_id)))
+    if (is_missing_out_id(x))
       paste(length(complement(x)))
   else
     paste(length(x$out_id))
 
-  paste0("rsplit [",
+  paste0("split [",
          length(x$in_id), "/",
          out_char, "]")
 }
@@ -137,7 +149,7 @@ obj_sum.rsplit <- function(x, ...) {
 #' @export
 type_sum.rsplit <- function(x, ...) {
   out_char <-
-    if (all(is.na(x$out_id)))
+    if (is_missing_out_id(x))
       format_n(length(complement(x)))
   else
     format_n(length(x$out_id))

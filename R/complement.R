@@ -1,8 +1,11 @@
 #' Determine the Assessment Samples
 #'
-#' Given an `rsplit` object, `complement` will determine which
+#' This method and function help find which data belong in the analysis and
+#' assessment sets.
+#'
+#' Given an `rsplit` object, `complement()` will determine which
 #'   of the data rows are contained in the assessment set. To save space,
-#'   many of the `rset` objects will not contain indices for the
+#'   many of the `rsplit` objects will not contain indices for the
 #'   assessment split.
 #'
 #' @param x An `rsplit` object
@@ -20,42 +23,31 @@ complement <- function(x, ...)
   UseMethod("complement")
 
 #' @export
-complement.vfold_split <- function(x, ...) {
-  if (!all(is.na(x$out_id))) {
-    return(x$out_id)
-  } else {
-    setdiff(1:nrow(x$data), x$in_id)
-  }
-}
-#' @export
-complement.mc_split  <- complement.vfold_split
-#' @export
-complement.val_split <- complement.vfold_split
-#' @export
-complement.loo_split <- complement.vfold_split
-#' @export
-complement.group_vfold_split <- complement.vfold_split
-#' @export
-complement.boot_split <- function(x, ...) {
-  if (!all(is.na(x$out_id))) {
+#' @rdname complement
+complement.rsplit <- function(x, ...) {
+  if (!is_missing_out_id(x)) {
     return(x$out_id)
   } else {
     (1:nrow(x$data))[-unique(x$in_id)]
   }
 }
 #' @export
+#' @rdname complement
 complement.rof_split <- function(x, ...) {
   get_stored_out_id(x)
 }
 #' @export
+#' @rdname complement
 complement.sliding_window_split <- function(x, ...) {
   get_stored_out_id(x)
 }
 #' @export
+#' @rdname complement
 complement.sliding_index_split <- function(x, ...) {
   get_stored_out_id(x)
 }
 #' @export
+#' @rdname complement
 complement.sliding_period_split <- function(x, ...) {
   get_stored_out_id(x)
 }
@@ -75,12 +67,27 @@ get_stored_out_id <- function(x) {
 }
 
 #' @export
+#' @rdname complement
 complement.apparent_split <- function(x, ...) {
-  if (!all(is.na(x$out_id))) {
+  if (!is_missing_out_id(x)) {
     return(x$out_id)
   } else {
     1:nrow(x$data)
   }
+}
+
+#' @export
+complement.default <- function(x, ...) {
+  cls <- paste0("'", class(x), "'", collapse = ", ")
+  rlang::abort(
+    paste("No `complement()` method for this class(es)", cls)
+  )
+}
+
+# Get the indices of the analysis set from the assessment set
+default_complement <- function(ind, n) {
+  list(analysis = setdiff(1:n, ind),
+       assessment = unique(ind))
 }
 
 
@@ -122,5 +129,9 @@ populate.rset <- function(x, ...) {
 rm_out <- function(x) {
   x$out_id <- NA
   x
+}
+
+is_missing_out_id <- function(x) {
+  identical(x$out_id, NA)
 }
 

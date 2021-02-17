@@ -2,9 +2,27 @@
 % Please edit documentation in R/complement.R
 \name{complement}
 \alias{complement}
+\alias{complement.rsplit}
+\alias{complement.rof_split}
+\alias{complement.sliding_window_split}
+\alias{complement.sliding_index_split}
+\alias{complement.sliding_period_split}
+\alias{complement.apparent_split}
 \title{Determine the Assessment Samples}
 \usage{
 complement(x, ...)
+
+\method{complement}{rsplit}(x, ...)
+
+\method{complement}{rof_split}(x, ...)
+
+\method{complement}{sliding_window_split}(x, ...)
+
+\method{complement}{sliding_index_split}(x, ...)
+
+\method{complement}{sliding_period_split}(x, ...)
+
+\method{complement}{apparent_split}(x, ...)
 }
 \arguments{
 \item{x}{An \code{rsplit} object}
@@ -15,9 +33,13 @@ complement(x, ...)
 A integer vector.
 }
 \description{
-Given an \code{rsplit} object, \code{complement} will determine which
+This method and function help find which data belong in the analysis and
+assessment sets.
+}
+\details{
+Given an \code{rsplit} object, \code{complement()} will determine which
 of the data rows are contained in the assessment set. To save space,
-many of the \code{rset} objects will not contain indices for the
+many of the \code{rsplit} objects will not contain indices for the
 assessment split.
 }
 \examples{

@@ -1,3 +1,22 @@
+# rsample 0.0.9
+
+* New `rset_reconstruct()`, a developer tool to ease creation of new rset subclasses (#210).
+
+* Added `permutations()`, a function for creating permutation resamples by performing column-wise shuffling (@mattwarkentin, #198).
+
+* Fixed an issue where empty assessment sets couldn't be created by `make_splits()` (#188).
+
+* `rset` objects now contain a "fingerprint" attribute that can be used to check to see if the same object uses the same resamples. 
+
+* The `reg_intervals()` function is a convenience function for `lm()`, `glm()`, `survreg()`, and `coxph()` models (#206). 
+
+* A few internal functions were exported so that `rsample`-adjacent packages can use the same underlying code. 
+
+* The `obj_sum()` method for `rsplit` objects was updated (#215).
+
+* Changed the inheritance structure for `rsplit` objects from specific to general and simplified the methods for the `complement()` generic (#216).
+
+
 # rsample 0.0.8
 
 * New `manual_rset()` for constructing rset objects manually from custom rsplits (tidymodels/tune#273).
