@@ -1,3 +1,19 @@
+# rsample 0.1.0
+
+* Fixed how `mc_cv()`, `initial_split()`, and `validation_split()` use the `prop` argument to first compute the assessment indices, rather than the analysis indices. This is a minor but **breaking change** in some situations; the previous implementation could cause an inconsistency in the sizes of the generated analysis and assessment sets when compared to how `prop` is documented to function (#217, @issactoast).
+
+* Fixed problem with creation of `apparent()` (#223) and `caret2rsample()` (#232) resamples.
+
+* Re-licensed package from GPL-2 to MIT. See [consent from copyright holders here](https://github.com/tidymodels/rsample/issues/226).
+
+* Attempts to stratify on a `Surv` object now error more informatively (#230). 
+
+* Exposed `pool` argument from `make_strata()` in user-facing resampling functions (#229).
+
+* Deprecated the `gather()` method for `rset` objects in favor of `tidyr::pivot_longer()` (#233).
+
+* Fixed bug in `make_strata()` for numeric variables with `NA` values (@brian-j-smith, #236).
+
 # rsample 0.0.9
 
 * New `rset_reconstruct()`, a developer tool to ease creation of new rset subclasses (#210).

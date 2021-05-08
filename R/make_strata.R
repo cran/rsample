@@ -25,7 +25,9 @@
 #' @param nunique An integer for the number of unique value threshold in the
 #'   algorithm.
 #' @param pool A proportion of data used to determine if a particular group is
-#'   too small and should be pooled into another group.
+#'   too small and should be pooled into another group. We do not recommend
+#'   decreasing this argument below its default of 0.1 because of the dangers
+#'   of stratifying groups that are too small.
 #' @param depth An integer that is used to determine the best number of
 #'   percentiles that should be used. The number of bins are based on
 #'   `min(5, floor(n / depth))` where `n = length(x)`.
@@ -67,9 +69,10 @@
 #' table(make_strata(x6, breaks = 10))
 #' @export
 make_strata <- function(x, breaks = 4, nunique = 5, pool = .1, depth = 20) {
-  num_vals <- unique(x)
+
+  default_pool <- 0.1
+  num_vals <- unique(stats::na.omit(x))
   n <- length(x)
-  num_miss <- sum(is.na(x))
   if (length(num_vals) <= nunique | is.character(x) | is.factor(x)) {
     x <- factor(x)
     xtab <- sort(table(x))
@@ -77,11 +80,18 @@ make_strata <- function(x, breaks = 4, nunique = 5, pool = .1, depth = 20) {
 
     ## This should really be based on some combo of rate and number.
     if (all(pcts < pool)) {
-      warning("Too little data to stratify. Unstratified resampling ",
-              "will be used.",
-              call. = FALSE)
+      rlang::warn("Too little data to stratify. Unstratified resampling ",
+                  "will be used.")
       return(factor(rep("strata1", n)))
     }
+
+    if (pool < default_pool & any(pcts < default_pool))
+      rlang::warn(
+        paste0("Stratifying groups that make up ",
+               round(100 * pool), "% of the data may be ",
+               "statistically risky.\nConsider increasing `pool` to at least 0.1")
+      )
+
     ## Small groups will be randomly allocated to stratas at end
     ## These should probably go into adjacent groups but this works for now
     if (any(pcts < pool))
@@ -90,19 +100,19 @@ make_strata <- function(x, breaks = 4, nunique = 5, pool = .1, depth = 20) {
     out <- factor(as.character(x))
   } else {
     if (floor(n / breaks) < depth) {
-      warning(paste0("The number of observations in each quantile is ",
-              "below the recommended threshold of ", depth, ". Stratification ",
-              "will be done with ", floor(n/depth), " breaks instead."),
-              call. = FALSE)
+      rlang::warn(
+        paste0("The number of observations in each quantile is ",
+               "below the recommended threshold of ", depth, ". Stratification ",
+               "will be done with ", floor(n/depth), " breaks instead.")
+      )
     }
     breaks <- min(breaks, floor(n/depth))
     if (breaks < 2) {
-      warning("Too little data to stratify. Unstratified resampling ",
-              "will be used.",
-              call. = FALSE)
+      rlang::warn("Too little data to stratify. Unstratified resampling ",
+                  "will be used.")
       return(factor(rep("strata1", n)))
     }
-    pctls <- quantile(x, probs = (0:breaks) / breaks)
+    pctls <- quantile(x, probs = (0:breaks) / breaks, na.rm = TRUE)
     pctls <- unique(pctls)
     out <- cut(x, breaks = pctls, include.lowest = TRUE)
   }

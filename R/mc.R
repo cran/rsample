@@ -6,15 +6,15 @@
 #' @details The `strata` argument causes the random sampling to be conducted
 #'  *within the stratification variable*. This can help ensure that the number of
 #'  data points in the analysis data is equivalent to the proportions in the
-#'  original data set. (Strata below 10% of the total are pooled together.)
+#'  original data set. (Strata below 10% of the total are pooled together
+#'  by default.)
 #' @inheritParams vfold_cv
+#' @inheritParams make_strata
 #' @param prop The proportion of data to be retained for modeling/analysis.
 #' @param times The number of times to repeat the sampling.
 #' @param strata A variable that is used to conduct stratified sampling to
 #'  create the resamples. This could be a single character value or a variable
 #'  name that corresponds to a variable that exists in the data frame.
-#' @param breaks A single number giving the number of bins desired to stratify
-#'  a numeric stratification variable.
 #' @export
 #' @return An tibble with classes `mc_cv`, `rset`, `tbl_df`, `tbl`, and
 #'  `data.frame`. The results include a column for the data split objects and a
@@ -35,7 +35,7 @@
 #'         })
 #'
 #' set.seed(13)
-#' resample2 <- mc_cv(wa_churn, strata = "churn", times = 3, prop = .5)
+#' resample2 <- mc_cv(wa_churn, strata = churn, times = 3, prop = .5)
 #' map_dbl(resample2$splits,
 #'         function(x) {
 #'           dat <- as.data.frame(x)$churn
@@ -43,28 +43,30 @@
 #'         })
 #'
 #' set.seed(13)
-#' resample3 <- mc_cv(wa_churn, strata = "tenure", breaks = 6, times = 3, prop = .5)
+#' resample3 <- mc_cv(wa_churn, strata = tenure, breaks = 6, times = 3, prop = .5)
 #' map_dbl(resample3$splits,
 #'         function(x) {
 #'           dat <- as.data.frame(x)$churn
 #'           mean(dat == "Yes")
 #'         })
 #' @export
-mc_cv <- function(data, prop = 3/4, times = 25, strata = NULL, breaks = 4, ...) {
+mc_cv <- function(data, prop = 3/4, times = 25,
+                  strata = NULL, breaks = 4, pool = 0.1, ...) {
 
   if(!missing(strata)) {
     strata <- tidyselect::vars_select(names(data), !!enquo(strata))
     if(length(strata) == 0) strata <- NULL
   }
 
-  strata_check(strata, names(data))
+  strata_check(strata, data)
 
   split_objs <-
     mc_splits(data = data,
-              prop = 1 - prop,
+              prop = prop,
               times = times,
               strata = strata,
-              breaks = breaks)
+              breaks = breaks,
+              pool = pool)
 
   ## We remove the holdout indices since it will save space and we can
   ## derive them later when they are needed.
@@ -81,14 +83,16 @@ mc_cv <- function(data, prop = 3/4, times = 25, strata = NULL, breaks = 4, ...) 
            subclass = c("mc_cv", "rset"))
 }
 
-# Get the indices of the analysis set from the assessment set
+# Get the indices of the assessment set from the analysis set
 mc_complement <- function(ind, n) {
-  list(analysis = setdiff(1:n, ind),
-       assessment = ind)
+  list(analysis = ind,
+       assessment = setdiff(1:n, ind))
 }
 
 
-mc_splits <- function(data, prop = 3/4, times = 25, strata = NULL, breaks = 4) {
+mc_splits <- function(data, prop = 3/4, times = 25,
+                      strata = NULL, breaks = 4, pool = 0.1) {
+
   if (!is.numeric(prop) | prop >= 1 | prop <= 0)
     stop("`prop` must be a number on (0, 1).", call. = FALSE)
 
@@ -98,7 +102,8 @@ mc_splits <- function(data, prop = 3/4, times = 25, strata = NULL, breaks = 4) {
   } else {
     stratas <- tibble::tibble(idx = 1:n,
                               strata = make_strata(getElement(data, strata),
-                                                   breaks = breaks))
+                                                   breaks = breaks,
+                                                   pool = pool))
     stratas <- split_unnamed(stratas, stratas$strata)
     stratas <-
       purrr::map_df(stratas, strat_sample, prop = prop, times = times)
