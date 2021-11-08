@@ -1,3 +1,15 @@
+# rsample 0.1.1
+
+* Updated documentation on stratified sampling (#245).
+
+* Changed `make_splits()` to an S3 generic, with the original functionality a method for `list` and a new method for dataframes that allows users to create a split from existing analysis & assessment sets (@LiamBlake, #246).
+
+* Added `validation_time_split()` for a single validation sample taking the first samples for training (@mine-cetinkaya-rundel, #256).
+
+* Escalated the deprecation of the `gather()` method for `rset` objects to a hard deprecation. Use `tidyr::pivot_longer()` instead (#257).
+
+* Changed resample "fingerprint" to hash the indices only rather than the entire resample result (including the data object). This is much faster and will still ensure the same resample for the same original data object (#259).
+
 # rsample 0.1.0
 
 * Fixed how `mc_cv()`, `initial_split()`, and `validation_split()` use the `prop` argument to first compute the assessment indices, rather than the analysis indices. This is a minor but **breaking change** in some situations; the previous implementation could cause an inconsistency in the sizes of the generated analysis and assessment sets when compared to how `prop` is documented to function (#217, @issactoast).

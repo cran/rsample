@@ -2,18 +2,21 @@
 % Please edit documentation in R/validation_split.R
 \name{validation_split}
 \alias{validation_split}
+\alias{validation_time_split}
 \title{Create a Validation Set}
 \usage{
 validation_split(data, prop = 3/4, strata = NULL, breaks = 4, pool = 0.1, ...)
+
+validation_time_split(data, prop = 3/4, lag = 0, ...)
 }
 \arguments{
 \item{data}{A data frame.}
 
 \item{prop}{The proportion of data to be retained for modeling/analysis.}
 
-\item{strata}{A variable that is used to conduct stratified sampling to
-create the resamples. This could be a single character value or a variable
-name that corresponds to a variable that exists in the data frame.}
+\item{strata}{A variable in \code{data} (single character or name) used to conduct
+stratified sampling. When not \code{NULL}, each resample is created within the
+stratification variable. Numeric \code{strata} are binned into quartiles.}
 
 \item{breaks}{A single number giving the number of bins desired to stratify a
 numeric stratification variable.}
@@ -24,6 +27,10 @@ decreasing this argument below its default of 0.1 because of the dangers
 of stratifying groups that are too small.}
 
 \item{...}{Not currently used.}
+
+\item{lag}{A value to include a lag between the assessment
+and analysis set. This is useful if lagged predictors will be used
+during training and testing.}
 }
 \value{
 An tibble with classes \code{validation_split}, \code{rset}, \code{tbl_df}, \code{tbl},
@@ -35,13 +42,21 @@ identifier.
 \code{validation_split()} takes a single random sample (without replacement) of
 the original data set to be used for analysis. All other data points are
 added to the assessment set (to be used as the validation set).
+\code{validation_time_split()} does the same, but takes the \emph{first} \code{prop} samples
+for training, instead of a random selection.
 }
 \details{
-The \code{strata} argument causes the random sampling to be conducted
-\emph{within the stratification variable}. This can help ensure that the number of
-data points in the analysis data is equivalent to the proportions in the
-original data set. (Strata below 10\% of the total are pooled together.)
+With a \code{strata} argument, the random sampling is conducted
+\emph{within the stratification variable}. This can help ensure that the
+resamples have equivalent proportions as the original data set. For
+a categorical variable, sampling is conducted separately within each class.
+For a numeric stratification variable, \code{strata} is binned into quartiles,
+which are then used to stratify. Strata below 10\% of the total are
+pooled together; see \code{\link[=make_strata]{make_strata()}} for more details.
 }
 \examples{
 validation_split(mtcars, prop = .9)
+
+data(drinks, package = "modeldata")
+validation_time_split(drinks)
 }
