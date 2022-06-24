@@ -1,3 +1,21 @@
+# rsample 1.0.0
+
+* Fixed how `nested_cv()` handles call objects so variables in the environment can be used when specifying resampling schemes (#81).
+
+* Updated to testthat 3e (#280) and added better checking for `vfold_cv()` (#293).
+
+* Finally removed the `gather()` method for `rset` objects. Use `tidyr::pivot_longer()` instead (#280).
+
+* Changed `initial_split()` to avoid calling tidyselect twice on `strata` (#296). This fix stops `initial_split()` from generating messages like:
+
+```
+  Note: Using an external vector in selections is ambiguous.
+  i Use `all_of(strata)` instead of `strata` to silence this message.
+  i See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
+```
+
+* Added better printing methods for initial split objects.
+
 # rsample 0.1.1
 
 * Updated documentation on stratified sampling (#245).

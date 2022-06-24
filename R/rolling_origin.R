@@ -50,30 +50,31 @@
 #'
 #' drinks_annual <- drinks %>%
 #'   mutate(year = as.POSIXlt(date)$year + 1900) %>%
-#'   nest(-year)
+#'   nest(data = c(-year))
 #'
 #' multi_year_roll <- rolling_origin(drinks_annual, cumulative = FALSE)
 #'
 #' analysis(multi_year_roll$splits[[1]])
 #' assessment(multi_year_roll$splits[[1]])
-#'
 #' @export
 rolling_origin <- function(data, initial = 5, assess = 1,
                            cumulative = TRUE, skip = 0, lag = 0, ...) {
   n <- nrow(data)
 
-  if (n < initial + assess)
-    stop("There should be at least ",
-         initial + assess,
-         " nrows in `data`",
-         call. = FALSE)
+  if (n < initial + assess) {
+    rlang::abort(
+      "There should be at least ", initial + assess, " rows in `data`."
+    )
+  }
 
-  if (!is.numeric(lag) | !(lag%%1==0)) {
-    stop("`lag` must be a whole number.", call. = FALSE)
+  if (!is.numeric(lag) | !(lag %% 1 == 0)) {
+    rlang::abort("`lag` must be a whole number.")
   }
 
   if (lag > initial) {
-    stop("`lag` must be less than or equal to the number of training observations.", call. = FALSE)
+    rlang::abort(
+      "`lag` must be less than or equal to the number of training observations."
+    )
   }
 
   stops <- seq(initial, (n - assess), by = skip + 1)
@@ -89,24 +90,23 @@ rolling_origin <- function(data, initial = 5, assess = 1,
   indices <- mapply(merge_lists, in_ind, out_ind, SIMPLIFY = FALSE)
   split_objs <-
     purrr::map(indices, make_splits, data = data, class = "rof_split")
-  split_objs <- list(splits = split_objs,
-                     id = names0(length(split_objs), "Slice"))
+  split_objs <- list(
+    splits = split_objs,
+    id = names0(length(split_objs), "Slice")
+  )
 
-  roll_att <- list(initial = initial,
-                   assess = assess,
-                   cumulative = cumulative,
-                   skip = skip,
-                   lag = lag)
+  roll_att <- list(
+    initial = initial,
+    assess = assess,
+    cumulative = cumulative,
+    skip = skip,
+    lag = lag
+  )
 
-  new_rset(splits = split_objs$splits,
-           ids = split_objs$id,
-           attrib = roll_att,
-           subclass = c("rolling_origin", "rset"))
-}
-
-#' @export
-print.rolling_origin <- function(x, ...) {
-  cat("#", pretty(x), "\n")
-  class(x) <- class(x)[!(class(x) %in% c("rolling_origin", "rset"))]
-  print(x, ...)
+  new_rset(
+    splits = split_objs$splits,
+    ids = split_objs$id,
+    attrib = roll_att,
+    subclass = c("rolling_origin", "rset")
+  )
 }

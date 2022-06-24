@@ -1,13 +1,13 @@
 Package: rsample
 Title: General Resampling Infrastructure
-Version: 0.1.1
+Version: 1.0.0
 Authors@R: c(
     person("Julia", "Silge", , "julia.silge@rstudio.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3671-836X")),
     person("Fanny", "Chow", , "fannybchow@gmail.com", role = "aut"),
     person("Max", "Kuhn", , "max@rstudio.com", role = "aut"),
     person("Hadley", "Wickham", , "hadley@rstudio.com", role = "aut"),
-    person("RStudio", role = "cph")
+    person("RStudio", role = c("cph", "fnd"))
   )
 Maintainer: Julia Silge <julia.silge@rstudio.com>
 Description: Classes and functions to create and summarize different types
@@ -16,23 +16,24 @@ License: MIT + file LICENSE
 URL: https://rsample.tidymodels.org,
         https://github.com/tidymodels/rsample
 BugReports: https://github.com/tidymodels/rsample/issues
-Depends: R (>= 3.2)
-Imports: dplyr (>= 1.0.0), ellipsis, furrr, generics, lifecycle,
-        methods, purrr, rlang (>= 0.4.10), slider (>= 0.1.5), tibble,
+Depends: R (>= 3.4)
+Imports: dplyr (>= 1.0.0), ellipsis, furrr, generics, glue, methods,
+        pillar, purrr, rlang (>= 0.4.10), slider (>= 0.1.5), tibble,
         tidyr, tidyselect, vctrs (>= 0.3.0)
 Suggests: broom, covr, ggplot2, knitr, modeldata, recipes (>= 0.1.4),
-        rmarkdown, stats, testthat, utils, xml2
+        rmarkdown, stats, testthat (>= 3.0.0), utils, xml2
 VignetteBuilder: knitr
-Config/Needs/website: GGally, nlstools, survival, tidymodels,
-        tidyposterior, tidyverse/tidytemplate
+Config/Needs/website: GGally, nlstools, tidymodels,
+        tidyverse/tidytemplate
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
+Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2021-11-08 20:30:17 UTC; juliasilge
+Packaged: 2022-06-24 17:08:48 UTC; juliasilge
 Author: Julia Silge [aut, cre] (<https://orcid.org/0000-0002-3671-836X>),
   Fanny Chow [aut],
   Max Kuhn [aut],
   Hadley Wickham [aut],
-  RStudio [cph]
+  RStudio [cph, fnd]
 Repository: CRAN
-Date/Publication: 2021-11-08 21:00:02 UTC
+Date/Publication: 2022-06-24 18:10:02 UTC

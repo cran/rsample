@@ -38,7 +38,7 @@ that contains the fold information (within repeat).
 \description{
 V-fold cross-validation (also known as k-fold cross-validation) randomly
 splits the data into V groups of roughly equal size (called "folds"). A
-resample of the analysis data consisted of V-1 of the folds while the
+resample of the analysis data consists of V-1 of the folds while the
 assessment set contains the final fold. In basic V-fold cross-validation
 (i.e. no repeats), the number of resamples is equal to V.
 }
@@ -65,25 +65,31 @@ data(wa_churn, package = "modeldata")
 
 set.seed(13)
 folds1 <- vfold_cv(wa_churn, v = 5)
-map_dbl(folds1$splits,
-        function(x) {
-          dat <- as.data.frame(x)$churn
-          mean(dat == "Yes")
-        })
+map_dbl(
+  folds1$splits,
+  function(x) {
+    dat <- as.data.frame(x)$churn
+    mean(dat == "Yes")
+  }
+)
 
 set.seed(13)
 folds2 <- vfold_cv(wa_churn, strata = churn, v = 5)
-map_dbl(folds2$splits,
-        function(x) {
-          dat <- as.data.frame(x)$churn
-          mean(dat == "Yes")
-        })
+map_dbl(
+  folds2$splits,
+  function(x) {
+    dat <- as.data.frame(x)$churn
+    mean(dat == "Yes")
+  }
+)
 
 set.seed(13)
 folds3 <- vfold_cv(wa_churn, strata = tenure, breaks = 6, v = 5)
-map_dbl(folds3$splits,
-        function(x) {
-          dat <- as.data.frame(x)$churn
-          mean(dat == "Yes")
-        })
+map_dbl(
+  folds3$splits,
+  function(x) {
+    dat <- as.data.frame(x)$churn
+    mean(dat == "Yes")
+  }
+)
 }

@@ -28,7 +28,7 @@
 #' # You can also use this to create an rset from a subset of an
 #' # existing rset
 #' resamples <- vfold_cv(mtcars)
-#' best_split <- resamples[5,]
+#' best_split <- resamples[5, ]
 #' manual_rset(best_split$splits, best_split$id)
 manual_rset <- function(splits, ids) {
   new_manual_rset(splits, ids)
@@ -36,11 +36,4 @@ manual_rset <- function(splits, ids) {
 
 new_manual_rset <- function(splits, ids) {
   new_rset(splits, ids, subclass = c("manual_rset", "rset"))
-}
-
-#' @export
-print.manual_rset <- function(x, ...) {
-  cat("#", pretty(x), "\n")
-  class(x) <- class(x)[!(class(x) %in% c("manual_rset", "rset"))]
-  print(x, ...)
 }

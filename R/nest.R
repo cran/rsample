@@ -30,8 +30,9 @@
 #' ## The dangers of outer bootstraps:
 #' set.seed(2222)
 #' bad_idea <- nested_cv(mtcars,
-#'                       outside = bootstraps(times = 5),
-#'                       inside = vfold_cv(v = 3))
+#'   outside = bootstraps(times = 5),
+#'   inside = vfold_cv(v = 3)
+#' )
 #'
 #' first_outer_split <- bad_idea$splits[[1]]
 #' outer_analysis <- as.data.frame(first_outer_split)
@@ -41,14 +42,14 @@
 #' ## `Volvo 142E` data partitioned?
 #' first_inner_split <- bad_idea$inner_resamples[[1]]$splits[[1]]
 #' inner_analysis <- as.data.frame(first_inner_split)
-#' inner_assess   <- as.data.frame(first_inner_split, data = "assessment")
+#' inner_assess <- as.data.frame(first_inner_split, data = "assessment")
 #'
 #' sum(grepl("Volvo 142E", rownames(inner_analysis)))
 #' sum(grepl("Volvo 142E", rownames(inner_assess)))
 #' @export
-nested_cv <- function(data, outside, inside)  {
-  nest_args <- formalArgs(nested_cv)
+nested_cv <- function(data, outside, inside) {
   cl <- match.call()
+  env <- rlang::caller_env()
 
   boot_msg <-
     paste0(
@@ -59,43 +60,35 @@ nested_cv <- function(data, outside, inside)  {
 
   outer_cl <- cl[["outside"]]
   if (is_call(outer_cl)) {
-    if (grepl("^bootstraps", deparse(outer_cl)))
-      warning(boot_msg, call. = FALSE)
-    outer_cl$data <- quote(data)
-    outside <- eval(outer_cl)
+    if (grepl("^bootstraps", deparse(outer_cl))) {
+      warn(boot_msg)
+    }
+    outer_cl <- rlang::call_modify(outer_cl, data = data)
+    outside <- eval(outer_cl, env)
   } else {
-    if (inherits(outside, "bootstraps"))
-      warning(boot_msg, call. = FALSE)
+    if (inherits(outside, "bootstraps")) {
+      warn(boot_msg)
+    }
   }
 
   inner_cl <- cl[["inside"]]
-  if (!is_call(inner_cl))
-    stop(
+  if (!is_call(inner_cl)) {
+    abort(
       "`inside` should be a expression such as `vfold()` or ",
-      "bootstraps(times = 10)` instead of a existing object.",
-      call. = FALSE
+      "bootstraps(times = 10)` instead of an existing object.",
     )
-  inside <- map(outside$splits, inside_resample, cl = inner_cl)
+  }
+  inside <- map(outside$splits, inside_resample, cl = inner_cl, env = env)
 
   out <- dplyr::mutate(outside, inner_resamples = inside)
-
   out <- add_class(out, cls = "nested_cv")
-
   attr(out, "outside") <- cl$outside
   attr(out, "inside") <- cl$inside
 
   out
 }
 
-inside_resample <- function(src, cl) {
-  cl$data <- quote(as.data.frame(src))
-  eval(cl)
-}
-
-#' @export
-print.nested_cv <- function(x, ...) {
-  char_x <- paste("#", pretty(x))
-  cat(char_x, sep = "\n")
-  class(x) <- class(tibble())
-  print(x, ...)
+inside_resample <- function(src, cl, env) {
+  cl <- rlang::call_modify(cl, data = as.data.frame(src))
+  eval(cl, envir = env)
 }
