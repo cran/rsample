@@ -25,8 +25,8 @@
 #'  one column called `id` that has a character string with the fold identifier.
 #'  For repeats, `id` is the repeat number and an additional column called `id2`
 #'  that contains the fold information (within repeat).
-
-#' @examples
+#'
+#' @examplesIf rlang::is_installed("modeldata")
 #' vfold_cv(mtcars, v = 10)
 #' vfold_cv(mtcars, v = 10, repeats = 2)
 #'
@@ -78,6 +78,11 @@ vfold_cv <- function(data, v = 10, repeats = 1,
       strata = strata, breaks = breaks, pool = pool
     )
   } else {
+    if (v == nrow(data)) {
+      rlang::abort(
+        glue::glue("Repeated resampling when `v` is {v} would create identical resamples")
+      )
+    }
     for (i in 1:repeats) {
       tmp <- vfold_splits(data = data, v = v, strata = strata, pool = pool)
       tmp$id2 <- tmp$id
@@ -97,7 +102,14 @@ vfold_cv <- function(data, v = 10, repeats = 1,
 
   ## Save some overall information
 
-  cv_att <- list(v = v, repeats = repeats, strata = !is.null(strata))
+  if (!is.null(strata)) names(strata) <- NULL
+  cv_att <- list(
+    v = v,
+    repeats = repeats,
+    strata = strata,
+    breaks = breaks,
+    pool = pool
+  )
 
   new_rset(
     splits = split_objs$splits,
@@ -137,6 +149,126 @@ vfold_splits <- function(data, v = 10, strata = NULL, breaks = 4, pool = 0.1) {
   tibble::tibble(
     splits = split_objs,
     id = names0(length(split_objs), "Fold")
+  )
+}
+
+#' Group V-Fold Cross-Validation
+#'
+#' Group V-fold cross-validation creates splits of the data based
+#'  on some grouping variable (which may have more than a single row
+#'  associated with it). The function can create as many splits as
+#'  there are unique values of the grouping variable or it can
+#'  create a smaller set of splits where more than one group is left
+#'  out at a time. A common use of this kind of resampling is when you have
+#'  repeated measures of the same subject.
+#'
+#' @inheritParams vfold_cv
+#' @param v The number of partitions of the data set. If left as `NULL` (the
+#'   default), `v` will be set to the number of unique values in the grouping
+#'   variable, creating "leave-one-group-out" splits.
+#' @param balance If `v` is less than the number of unique groups, how should
+#'  groups be combined into folds? Should be one of
+#'  `"groups"`, which will assign roughly the same number of groups to each
+#'  fold, or `"observations"`, which will assign roughly the same number of
+#'  observations to each fold.
+#' @inheritParams make_groups
+#'
+#' @export
+#' @return A tibble with classes `group_vfold_cv`,
+#'  `rset`, `tbl_df`, `tbl`, and `data.frame`.
+#'  The results include a column for the data split objects and an
+#'  identification variable.
+#' @examplesIf rlang::is_installed("modeldata")
+#' data(ames, package = "modeldata")
+#'
+#' set.seed(123)
+#' group_vfold_cv(ames, group = Neighborhood, v = 5)
+#' group_vfold_cv(
+#'   ames,
+#'   group = Neighborhood,
+#'   v = 5,
+#'   balance = "observations"
+#' )
+#' group_vfold_cv(ames, group = Neighborhood, v = 5, repeats = 2)
+#'
+#' # Leave-one-group-out CV
+#' group_vfold_cv(ames, group = Neighborhood)
+#'
+#' @export
+group_vfold_cv <- function(data, group = NULL, v = NULL, repeats = 1, balance = c("groups", "observations"), ...) {
+
+  group <- validate_group({{ group }}, data)
+  balance <- rlang::arg_match(balance)
+
+  if (repeats == 1) {
+    split_objs <- group_vfold_splits(data = data, group = group, v = v, balance = balance)
+  } else {
+    if (is.null(v)) {
+      rlang::abort(
+        "Repeated resampling when `v` is `NULL` would create identical resamples"
+      )
+    }
+    if (v == length(unique(getElement(data, group)))) {
+      rlang::abort(
+        glue::glue("Repeated resampling when `v` is {v} would create identical resamples")
+      )
+    }
+    for (i in 1:repeats) {
+      tmp <- group_vfold_splits(data = data, group = group, v = v, balance = balance)
+      tmp$id2 <- tmp$id
+      tmp$id <- names0(repeats, "Repeat")[i]
+      split_objs <- if (i == 1) {
+        tmp
+      } else {
+        rbind(split_objs, tmp)
+      }
+    }
+  }
+
+  ## We remove the holdout indices since it will save space and we can
+  ## derive them later when they are needed.
+
+  split_objs$splits <- map(split_objs$splits, rm_out)
+
+  # Update `v` if not supplied directly
+  if (is.null(v)) {
+    v <- length(split_objs$splits)
+  }
+
+  ## Save some overall information
+
+  cv_att <- list(v = v, group = group, balance = balance, repeats = 1, strata = FALSE)
+
+  new_rset(
+    splits = split_objs$splits,
+    ids = split_objs[, grepl("^id", names(split_objs))],
+    attrib = cv_att,
+    subclass = c("group_vfold_cv", "vfold_cv", "group_rset", "rset")
+  )
+}
+
+group_vfold_splits <- function(data, group, v = NULL, balance) {
+
+  group <- getElement(data, group)
+  max_v <- length(unique(group))
+
+  if (is.null(v)) {
+    v <- max_v
+  } else {
+    check_v(v = v, max_v = max_v, rows = "groups", call = rlang::caller_env())
+  }
+
+  indices <- make_groups(data, group, v, balance)
+  indices <- lapply(indices, default_complement, n = nrow(data))
+  split_objs <-
+    purrr::map(indices,
+               make_splits,
+               data = data,
+               class = c("group_vfold_split", "vfold_split")
+    )
+  tibble::tibble(
+    splits = split_objs,
+    id = names0(length(split_objs), "Resample")
   )
 }
 

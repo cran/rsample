@@ -37,7 +37,7 @@
 #'
 #' @param period The period to group the `index` by. This is specified as a
 #'   single string, such as `"year"` or `"month"`. See the `.period` argument
-#'   of [slider::slide_index()] for the full list of options and further
+#'   of [slider::slide_period()] for the full list of options and further
 #'   explanation.
 #'
 #' @param lookback The number of elements to look back from the current element
@@ -127,7 +127,7 @@
 #'
 #' @name slide-resampling
 #'
-#' @examples
+#' @examplesIf rlang::is_installed("modeldata")
 #' library(vctrs)
 #' library(tibble)
 #' library(modeldata)
@@ -312,6 +312,7 @@ sliding_index <- function(data,
     rlang::abort("`index` must specify exactly one column in `data`.")
   }
 
+  index_attrib <- index
   index <- data[[loc]]
 
   seq <- vctrs::vec_seq_along(data)
@@ -352,6 +353,7 @@ sliding_index <- function(data,
   ids <- names0(length(indices), prefix = "Slice")
 
   attrib <- list(
+    index = index_attrib,
     lookback = lookback,
     assess_start = assess_start,
     assess_stop = assess_stop,
@@ -406,6 +408,7 @@ sliding_period <- function(data,
     rlang::abort("`index` must specify exactly one column in `data`.")
   }
 
+  index_attrib <- index
   index <- data[[loc]]
 
   seq <- vctrs::vec_seq_along(data)
@@ -452,6 +455,7 @@ sliding_period <- function(data,
   ids <- names0(length(indices), prefix = "Slice")
 
   attrib <- list(
+    index = index_attrib,
     period = period,
     lookback = lookback,
     assess_start = assess_start,

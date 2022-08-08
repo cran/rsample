@@ -150,3 +150,131 @@ split_unnamed <- function(x, f) {
   }
   res
 }
+
+#' Reverse the analysis and assessment sets
+#'
+#' This functions "swaps" the analysis and assessment sets of either a single
+#' `rsplit` or all `rsplit`s in the `splits` column of an `rset` object.
+#'
+#' @param x An `rset` or `rsplit` object.
+#' @inheritParams rlang::args_dots_empty
+#'
+#' @return An object of the same class as `x`
+#'
+#' @examples
+#' set.seed(123)
+#' starting_splits <- vfold_cv(mtcars, v = 3)
+#' reverse_splits(starting_splits)
+#' reverse_splits(starting_splits$splits[[1]])
+#'
+#' @rdname reverse_splits
+#' @export
+reverse_splits <- function(x, ...) {
+  UseMethod("reverse_splits")
+}
+
+#' @rdname reverse_splits
+#' @export
+reverse_splits.default <- function(x, ...) {
+  rlang::abort(
+    "`x` must be either an `rsplit` or an `rset` object"
+  )
+}
+
+#' @rdname reverse_splits
+#' @export
+reverse_splits.permutations <- function(x, ...) {
+  rlang::abort(
+    "Permutations cannot have their splits reversed"
+  )
+}
+
+#' @rdname reverse_splits
+#' @export
+reverse_splits.perm_split <- reverse_splits.permutations
+
+#' @rdname reverse_splits
+#' @export
+reverse_splits.rsplit <- function(x, ...) {
+
+  rlang::check_dots_empty()
+
+  out_splits <- list(
+    analysis = as.integer(x, data = "assessment"),
+    assessment = as.integer(x, data = "analysis")
+  )
+  out_splits <- make_splits(out_splits, x$data)
+  class(out_splits) <- class(x)
+  out_splits
+
+}
+
+#' @rdname reverse_splits
+#' @export
+reverse_splits.rset <- function(x, ...) {
+
+  rlang::check_dots_empty()
+
+  x$splits <- purrr::map(x$splits, reverse_splits)
+
+  x
+}
+
+#' "Reshuffle" an rset to re-generate a new rset with the same parameters
+#'
+#' This function re-generates an rset object, using the same arguments used
+#' to generate the original.
+#'
+#' @param rset The `rset` object to be reshuffled
+#'
+#' @return An rset of the same class as `rset`.
+#'
+#' @examples
+#' set.seed(123)
+#' (starting_splits <- group_vfold_cv(mtcars, cyl, v = 3))
+#' reshuffle_rset(starting_splits)
+#'
+#' @export
+reshuffle_rset <- function(rset) {
+  if (!inherits(rset, "rset")) {
+    rlang::abort("`rset` must be an rset object")
+  }
+
+  if (inherits(rset, "manual_rset")) {
+    rlang::abort("`manual_rset` objects cannot be reshuffled")
+  }
+
+  # non-random classes is defined below
+  if (any(non_random_classes %in% class(rset))) {
+    cls <- class(rset)[[1]]
+    rlang::warn(
+      glue::glue("`reshuffle_rset()` will return an identical rset when called on {cls} objects")
+    )
+  }
+
+  arguments <- attributes(rset)
+  useful_arguments <- names(formals(arguments$class[[1]]))
+  useful_arguments <- arguments[useful_arguments]
+  useful_arguments <- useful_arguments[!is.na(names(useful_arguments))]
+  if (identical(useful_arguments$strata, FALSE)) {
+    useful_arguments$strata <- NULL
+  } else if (identical(useful_arguments$strata, TRUE)) {
+    rlang::abort(
+      "Cannot reshuffle this rset (`attr(rset, 'strata')` is `TRUE`, not a column identifier)",
+      i = "If the original object was created with an older version of rsample, try recreating it with the newest version of the package"
+    )
+  }
+
+  do.call(
+    arguments$class[[1]],
+    c(list(data = rset$splits[[1]]$data), useful_arguments)
+  )
+}
+
+non_random_classes <- c(
+  "sliding_index",
+  "sliding_period",
+  "sliding_window",
+  "rolling_origin",
+  "validation_time_split"
+)

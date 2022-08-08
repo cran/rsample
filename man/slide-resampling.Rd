@@ -127,7 +127,7 @@ allowed. Additionally, the index cannot contain any missing values.}
 
 \item{period}{The period to group the \code{index} by. This is specified as a
 single string, such as \code{"year"} or \code{"month"}. See the \code{.period} argument
-of \code{\link[slider:slide_index]{slider::slide_index()}} for the full list of options and further
+of \code{\link[slider:slide_period]{slider::slide_period()}} for the full list of options and further
 explanation.}
 
 \item{every}{A single positive integer. The number of periods to group
@@ -163,6 +163,7 @@ windows from daily data.
 }
 }
 \examples{
+\dontshow{if (rlang::is_installed("modeldata")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 library(vctrs)
 library(tibble)
 library(modeldata)
@@ -236,6 +237,7 @@ sliding_period(
   skip = 4,
   step = 2
 )
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=rolling_origin]{rolling_origin()}}

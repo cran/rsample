@@ -1,3 +1,12 @@
+# bad args
+
+    Code
+      group_bootstraps(warpbreaks, tension)
+    Condition
+      Error in `group_bootstraps()`:
+      ! Some assessment sets contained zero rows
+      i Consider using a non-grouped resampling method
+
 # printing
 
     Code
@@ -19,4 +28,5 @@
        9 <split [54/23]> Bootstrap09
       10 <split [54/22]> Bootstrap10
       # ... with 15 more rows
+      # i Use `print(n = ...)` to see more rows
 

@@ -12,7 +12,7 @@
 #' @return An tibble with classes `mc_cv`, `rset`, `tbl_df`, `tbl`, and
 #'  `data.frame`. The results include a column for the data split objects and a
 #'  column called `id` that has a character string with the resample identifier.
-#' @examples
+#' @examplesIf rlang::is_installed("modeldata")
 #' mc_cv(mtcars, times = 2)
 #' mc_cv(mtcars, prop = .5, times = 2)
 #'
@@ -73,10 +73,13 @@ mc_cv <- function(data, prop = 3 / 4, times = 25,
 
   split_objs$splits <- map(split_objs$splits, rm_out)
 
+  if (!is.null(strata)) names(strata) <- NULL
   mc_att <- list(
     prop = prop,
     times = times,
-    strata = !is.null(strata)
+    strata = strata,
+    breaks = breaks,
+    pool = pool
   )
 
   new_rset(
@@ -133,4 +136,92 @@ strat_sample <- function(x, prop, times, ...) {
   out <- purrr::map_df(idx, function(ind, x) x[sort(ind), "idx"], x = x)
   out$rs_id <- rep(1:times, each = floor(n * prop))
   out
+}
+
+#' Group Monte Carlo Cross-Validation
+#'
+#' Group Monte Carlo cross-validation creates splits of the data based
+#'  on some grouping variable (which may have more than a single row
+#'  associated with it). One resample of Monte Carlo cross-validation takes a
+#'  random sample (without replacement) of groups in the original data set to be
+#'  used for analysis. All other data points are added to the assessment set.
+#'  A common use of this kind of resampling is when you have
+#'  repeated measures of the same subject.
+#'
+#' @inheritParams mc_cv
+#' @inheritParams make_groups
+#' @export
+#' @return A tibble with classes `group_mc_cv`,
+#'  `rset`, `tbl_df`, `tbl`, and `data.frame`.
+#'  The results include a column for the data split objects and an
+#'  identification variable.
+#' @examplesIf rlang::is_installed("modeldata")
+#' data(ames, package = "modeldata")
+#'
+#' set.seed(123)
+#' group_mc_cv(ames, group = Neighborhood, times = 5)
+#'
+#' @export
+group_mc_cv <- function(data, group, prop = 3 / 4, times = 25, ...) {
+
+  rlang::check_dots_empty()
+
+  group <- validate_group({{ group }}, data)
+
+  split_objs <-
+    group_mc_splits(
+      data = data,
+      group = group,
+      prop = prop,
+      times = times
+    )
+
+  ## We remove the holdout indices since it will save space and we can
+  ## derive them later when they are needed.
+  split_objs$splits <- map(split_objs$splits, rm_out)
+
+  mc_att <- list(
+    group = group,
+    prop = prop,
+    times = times,
+    balance = "prop",
+    strata = FALSE
+  )
+
+  new_rset(
+    splits = split_objs$splits,
+    ids = split_objs$id,
+    attrib = mc_att,
+    subclass = c("group_mc_cv", "mc_cv", "group_rset", "rset")
+  )
+}
+
+group_mc_splits <- function(data, group, prop = 3 / 4, times = 25) {
+
+  group <- getElement(data, group)
+  n <- nrow(data)
+  indices <- make_groups(data, group, times, balance = "prop", prop = prop, replace = FALSE)
+  indices <- lapply(indices, mc_complement, n = n)
+  split_objs <-
+    purrr::map(
+      indices,
+      make_splits,
+      data = data,
+      class = c("grouped_mc_split", "mc_split")
+    )
+  all_assessable <- purrr::map(split_objs, function(x) nrow(assessment(x)))
+
+  if (any(all_assessable == 0)) {
+    rlang::abort(
+      c(
+        "Some assessment sets contained zero rows",
+        i = "Consider using a non-grouped resampling method"
+      ),
+      call = rlang::caller_env()
+    )
+  }
+  list(
+    splits = split_objs,
+    id = names0(length(split_objs), "Resample")
+  )
 }

@@ -109,7 +109,7 @@ rset_reconstructable <- function(x, to) {
 test_data <- function() {
   data.frame(
     x = 1:50,
-    y = rep(c(1, 2), each = 25),
+    y = rep(seq.int(10), each = 5),
     index = as.Date(0:49, origin = "1970-01-01")
   )
 }
@@ -118,21 +118,33 @@ test_data <- function() {
 # Delay assignment because we are creating this directly in the R script
 # and not all of the required helpers might have been sourced yet.
 delayedAssign("rset_subclasses", {
-  list(
-    bootstraps       = bootstraps(test_data()),
-    vfold_cv         = vfold_cv(test_data(), v = 10, repeats = 2),
-    group_vfold_cv   = group_vfold_cv(test_data(), y),
-    loo_cv           = loo_cv(test_data()),
-    mc_cv            = mc_cv(test_data()),
-    nested_cv        = nested_cv(test_data(), outside = vfold_cv(v = 3), inside = bootstraps(times = 5)),
-    validation_split = validation_split(test_data()),
-    rolling_origin   = rolling_origin(test_data()),
-    sliding_window   = sliding_window(test_data()),
-    sliding_index    = sliding_index(test_data(), index),
-    sliding_period   = sliding_period(test_data(), index, "week"),
-    manual_rset      = manual_rset(bootstraps(test_data())$splits[1:2], c("ID1", "ID2")),
-    apparent         = apparent(test_data())
-  )
+  if (rlang::is_installed("withr")) {
+    withr::with_seed(
+      123,
+      list(
+        bootstraps             = bootstraps(test_data()),
+        group_bootstraps       = group_bootstraps(test_data(), y),
+        vfold_cv               = vfold_cv(test_data(), v = 10, repeats = 2),
+        group_vfold_cv         = group_vfold_cv(test_data(), y),
+        loo_cv                 = loo_cv(test_data()),
+        mc_cv                  = mc_cv(test_data()),
+        group_mc_cv            = group_mc_cv(test_data(), y),
+        nested_cv              = nested_cv(test_data(), outside = vfold_cv(v = 3), inside = bootstraps(times = 5)),
+        validation_split       = validation_split(test_data()),
+        validation_time_split  = validation_time_split(test_data()),
+        group_validation_split = group_validation_split(test_data(), y),
+        rolling_origin         = rolling_origin(test_data()),
+        sliding_window         = sliding_window(test_data()),
+        sliding_index          = sliding_index(test_data(), index),
+        sliding_period         = sliding_period(test_data(), index, "week"),
+        manual_rset            = manual_rset(list(initial_time_split(test_data()), initial_time_split(test_data())), c("ID1", "ID2")),
+        apparent               = apparent(test_data()),
+        permutations           = permutations(test_data(), y)
+      )
+    )
+  } else {
+    NULL
+  }
 })
 
 # ------------------------------------------------------------------------------

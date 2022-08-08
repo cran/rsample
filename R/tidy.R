@@ -17,7 +17,7 @@
 #' @details Note that for nested resampling, the rows of the inner resample,
 #'  named `inner_Row`, are *relative* row indices and do not correspond to the
 #'  rows in the original data set.
-#' @examples
+#' @examplesIf rlang::is_installed("ggplot2")
 #' library(ggplot2)
 #' theme_set(theme_bw())
 #'
@@ -74,10 +74,7 @@ tidy.rsplit <- function(x, unique_ind = TRUE, ...) {
 #' @export
 tidy.rset <- function(x, ...) {
   dots <- list(...)
-  unique_ind <- dplyr::if_else(is.null(dots$unique_ind),
-    TRUE,
-    dots$unique_ind
-  )
+  unique_ind <- dots$unique_ind %||% TRUE
   stacked <- purrr::map(x$splits, tidy, unique_ind = unique_ind)
   for (i in seq_along(stacked)) {
     stacked[[i]]$Resample <- x$id[i]

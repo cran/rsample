@@ -373,13 +373,14 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <div id="TOC">
 <ul>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#model-assessment">Model Assessment</a></li>
-<li><a href="#using-the-bootstrap-to-make-comparisons">Using the
-Bootstrap to Make Comparisons</a></li>
-<li><a href="#bootstrap-estimates-of-model-coefficients">Bootstrap
-Estimates of Model Coefficients</a></li>
-<li><a href="#keeping-tidy">Keeping Tidy</a></li>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#model-assessment" id="toc-model-assessment">Model
+Assessment</a></li>
+<li><a href="#using-the-bootstrap-to-make-comparisons" id="toc-using-the-bootstrap-to-make-comparisons">Using the Bootstrap to
+Make Comparisons</a></li>
+<li><a href="#bootstrap-estimates-of-model-coefficients" id="toc-bootstrap-estimates-of-model-coefficients">Bootstrap Estimates
+of Model Coefficients</a></li>
+<li><a href="#keeping-tidy" id="toc-keeping-tidy">Keeping Tidy</a></li>
 </ul>
 </div>
 
@@ -451,7 +452,8 @@ accuracy of the model.</p>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 &lt;split [1323/147]&gt; Repeat01 Fold08</span></span>
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 &lt;split [1323/147]&gt; Repeat01 Fold09</span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 &lt;split [1323/147]&gt; Repeat01 Fold10</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 90 more rows</span></span></code></pre></div>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 90 more rows</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ...)` to see more rows</span></span></code></pre></div>
 <p>Now let’s write a function that will, for each resample:</p>
 <ol style="list-style-type: decimal">
 <li>obtain the analysis data set (i.e. the 90% used for modeling)</li>
@@ -522,7 +524,8 @@ predictor in log-odds units.</p>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 &lt;split [1323/147]&gt; Repeat01 Fold08 &lt;tibble [147 × 34]&gt;</span></span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 &lt;split [1323/147]&gt; Repeat01 Fold09 &lt;tibble [147 × 34]&gt;</span></span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 &lt;split [1323/147]&gt; Repeat01 Fold10 &lt;tibble [147 × 34]&gt;</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 90 more rows</span></span></code></pre></div>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 90 more rows</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ...)` to see more rows</span></span></code></pre></div>
 <p>Now we can compute the accuracy values for all of the assessment data
 sets:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rs_obj<span class="sc">$</span>accuracy <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(rs_obj<span class="sc">$</span>results, <span class="cf">function</span>(x) <span class="fu">mean</span>(x<span class="sc">$</span>correct))</span>
@@ -612,11 +615,12 @@ used to estimate and save these values for each split.</p>
 <span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 &lt;split [1470/552]&gt; Bootstrap009      -30  &lt;df [1 × 6]&gt;</span></span>
 <span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 &lt;split [1470/517]&gt; Bootstrap010      410  &lt;df [1 × 6]&gt;</span></span>
 <span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 490 more rows</span></span>
-<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>bt_resamples<span class="sc">$</span>betas[[<span class="dv">1</span>]]</span>
-<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   (Intercept) JobSatisfaction.L JobSatisfaction.Q JobSatisfaction.C GenderMale</span></span>
-<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1      -0.939            -0.501            -0.272            0.0842     0.0989</span></span>
-<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   MonthlyIncome</span></span>
-<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1     -0.000129</span></span></code></pre></div>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ...)` to see more rows</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>bt_resamples<span class="sc">$</span>betas[[<span class="dv">1</span>]]</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   (Intercept) JobSatisfaction.L JobSatisfaction.Q JobSatisfaction.C GenderMale</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1      -0.939            -0.501            -0.272            0.0842     0.0989</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   MonthlyIncome</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1     -0.000129</span></span></code></pre></div>
 </div>
 <div id="keeping-tidy" class="section level2">
 <h2>Keeping Tidy</h2>
@@ -642,7 +646,8 @@ plotting, etc. rsample contains <code>tidy</code> methods for
 <span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8    13 Analysis</span></span>
 <span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9    18 Analysis</span></span>
 <span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10    19 Analysis</span></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 1,460 more rows</span></span></code></pre></div>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 1,460 more rows</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ...)` to see more rows</span></span></code></pre></div>
 <p>and</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(bt_resamples)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; [1] &quot;bootstraps&quot; &quot;rset&quot;       &quot;tbl_df&quot;     &quot;tbl&quot;        &quot;data.frame&quot;</span></span>
@@ -660,7 +665,8 @@ plotting, etc. rsample contains <code>tidy</code> methods for
 <span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8     1 Analysis Bootstrap013</span></span>
 <span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9     1 Analysis Bootstrap015</span></span>
 <span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10     1 Analysis Bootstrap016</span></span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 734,990 more rows</span></span></code></pre></div>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # … with 734,990 more rows</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ Use `print(n = ...)` to see more rows</span></span></code></pre></div>
 </div>
 
 <script type="text/javascript">

@@ -4,7 +4,7 @@
       assessment(xx$splits[[1]])
     Condition
       Error in `as.data.frame()`:
-      ! There is no assessment data set for an `rsplit` object with class `rsplit`.
+      ! There is no assessment data set for an `rsplit` object with class `perm_split`.
 
 # printing
 
@@ -27,4 +27,5 @@
        9 <split [32/0]> Permutations09
       10 <split [32/0]> Permutations10
       # ... with 15 more rows
+      # i Use `print(n = ...)` to see more rows
 

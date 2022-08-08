@@ -9,7 +9,7 @@ pretty.vfold_cv <- function(x, ...) {
   if (details$repeats > 1) {
     res <- paste(res, "repeated", details$repeats, "times")
   }
-  if (details$strata) {
+  if (has_strata(details)) {
     res <- paste(res, "using stratification")
   }
   res
@@ -57,7 +57,7 @@ pretty.mc_cv <- function(x, ...) {
     details$times,
     " resamples "
   )
-  if (details$strata) {
+  if (has_strata(details)) {
     res <- paste(res, "using stratification")
   }
   res
@@ -73,7 +73,23 @@ pretty.validation_split <- function(x, ...) {
     signif(1 - details$prop, 2),
     ") "
   )
-  if (details$strata) {
+  if (has_strata(details)) {
+    res <- paste(res, "using stratification")
+  }
+  res
+}
+
+#' @export
+pretty.group_validation_split <- function(x, ...) {
+  details <- attributes(x)
+  res <- paste0(
+    "Group Validation Set Split (",
+    signif(details$prop, 2),
+    "/",
+    signif(1 - details$prop, 2),
+    ") "
+  )
+  if (has_strata(details)) {
     res <- paste(res, "using stratification")
   }
   res
@@ -108,7 +124,7 @@ pretty.nested_cv <- function(x, ...) {
 pretty.bootstraps <- function(x, ...) {
   details <- attributes(x)
   res <- "Bootstrap sampling"
-  if (details$strata) {
+  if (has_strata(details)) {
     res <- paste(res, "using stratification")
   }
   if (details$apparent) {
@@ -116,6 +132,20 @@ pretty.bootstraps <- function(x, ...) {
   }
   res
 }
+
+#' @export
+pretty.group_bootstraps <- function(x, ...) {
+  details <- attributes(x)
+  res <- "Group bootstrap sampling"
+  if (has_strata(details)) {
+    res <- paste(res, "using stratification")
+  }
+  if (details$apparent) {
+    res <- paste(res, "with apparent sample")
+  }
+  res
+}
+
 
 #' @export
 pretty.permutations <- function(x, ...) {
@@ -131,6 +161,22 @@ pretty.permutations <- function(x, ...) {
 pretty.group_vfold_cv <- function(x, ...) {
   details <- attributes(x)
   paste0("Group ", details$v, "-fold cross-validation")
+}
+
+#' @export
+pretty.group_mc_cv <- function(x, ...) {
+  details <- attributes(x)
+  res <- paste0(
+    "Group Monte Carlo cross-validation (",
+    signif(details$prop, 2),
+    "/",
+    signif(1 - details$prop, 2),
+    ") with ",
+    details$times,
+    " resamples "
+  )
+
+  res
 }
 
 #' @export
@@ -155,9 +201,22 @@ print.bootstraps <- function(x, ...) {
 }
 
 #' @export
+print.group_bootstraps <- function(x, ...) {
+  cat("#", pretty(x), "\n")
+  class(x) <- class(x)[!(class(x) %in% c("group_bootstraps",
+                                         "bootstraps",
+                                         "group_rset",
+                                         "rset"))]
+  print(x, ...)
+}
+
+#' @export
 print.group_vfold_cv <- function(x, ...) {
   cat("#", pretty(x), "\n")
-  class(x) <- class(x)[!(class(x) %in% c("group_vfold_cv", "rset"))]
+  class(x) <- class(x)[!(class(x) %in% c("group_vfold_cv",
+                                         "vfold_cv",
+                                         "group_rset",
+                                         "rset"))]
   print(x, ...)
 }
 
@@ -254,6 +313,17 @@ print.validation_split <- function(x, ...) {
 }
 
 #' @export
+print.group_validation_split <- function(x, ...) {
+  cat("#", pretty(x), "\n")
+  class(x) <- class(x)[!(class(x) %in% c("group_validation_split",
+                                         "validation_split",
+                                         "group_rset",
+                                         "rset"))]
+  print(x, ...)
+}
+
+
+#' @export
 print.val_split <- function(x, ...) {
   if (is_missing_out_id(x)) {
     out_char <- paste(length(complement(x)))
@@ -271,8 +341,22 @@ print.val_split <- function(x, ...) {
 }
 
 #' @export
+print.group_mc_cv <- function(x, ...) {
+  cat("#", pretty(x), "\n")
+  class(x) <- class(x)[!(class(x) %in% c("group_mc_cv",
+                                         "group_rset",
+                                         "mc_cv",
+                                         "rset"))]
+  print(x, ...)
+}
+
+#' @export
 print.vfold_cv <- function(x, ...) {
   cat("# ", pretty(x), "\n")
   class(x) <- class(x)[!(class(x) %in% c("vfold_cv", "rset"))]
   print(x, ...)
+}
+
+has_strata <- function(x) {
+  !is.null(x$strata) && !identical(x$strata, FALSE)
 }

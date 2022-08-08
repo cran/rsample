@@ -15,6 +15,10 @@
 
     The number of rows is less than `v = 500`
 
+---
+
+    Repeated resampling when `v` is 150 would create identical resamples
+
 # printing
 
     Code
@@ -34,4 +38,54 @@
        8 <split [29/3]> Fold08
        9 <split [29/3]> Fold09
       10 <split [29/3]> Fold10
+
+# grouping -- bad args
+
+    Repeated resampling when `v` is 4 would create identical resamples
+
+---
+
+    Repeated resampling when `v` is `NULL` would create identical resamples
+
+# grouping -- other balance methods
+
+    Code
+      rs1
+    Output
+      # Group 5-fold cross-validation 
+      # A tibble: 5 x 2
+        splits             id       
+        <list>             <chr>    
+      1 <split [2364/566]> Resample1
+      2 <split [2371/559]> Resample2
+      3 <split [2360/570]> Resample3
+      4 <split [2278/652]> Resample4
+      5 <split [2347/583]> Resample5
+
+# grouping -- printing
+
+    Code
+      group_vfold_cv(warpbreaks, "tension")
+    Output
+      # Group 3-fold cross-validation 
+      # A tibble: 3 x 2
+        splits          id       
+        <list>          <chr>    
+      1 <split [36/18]> Resample1
+      2 <split [36/18]> Resample2
+      3 <split [36/18]> Resample3
+
+# grouping -- printing with ...
+
+    Code
+      print(group_vfold_cv(warpbreaks, "tension"), n = 2)
+    Output
+      # Group 3-fold cross-validation 
+      # A tibble: 3 x 2
+        splits          id       
+        <list>          <chr>    
+      1 <split [36/18]> Resample1
+      2 <split [36/18]> Resample2
+      # ... with 1 more row
+      # i Use `print(n = ...)` to see more rows
 
