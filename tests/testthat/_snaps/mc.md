@@ -18,7 +18,6 @@
        9 <split [40/14]> Resample09
       10 <split [40/14]> Resample10
       # ... with 15 more rows
-      # i Use `print(n = ...)` to see more rows
 
 # grouping - bad args
 
@@ -28,6 +27,20 @@
       Error in `group_mc_cv()`:
       ! Some assessment sets contained zero rows
       i Consider using a non-grouped resampling method
+
+# grouping -- strata
+
+    Code
+      sizes4
+    Output
+      # A tibble: 5 x 5
+        analysis assessment     n     p id       
+           <int>      <int> <int> <int> <chr>    
+      1    37939      12061 50000     3 Resample1
+      2    37063      12937 50000     3 Resample2
+      3    37178      12822 50000     3 Resample3
+      4    37950      12050 50000     3 Resample4
+      5    37585      12415 50000     3 Resample5
 
 # grouping - printing
 
@@ -49,7 +62,6 @@
        9 <split [36/18]> Resample09
       10 <split [36/18]> Resample10
       # ... with 15 more rows
-      # i Use `print(n = ...)` to see more rows
 
 # grouping - printing with ...
 
@@ -63,5 +75,4 @@
       1 <split [36/18]> Resample01
       2 <split [36/18]> Resample02
       # ... with 23 more rows
-      # i Use `print(n = ...)` to see more rows
 

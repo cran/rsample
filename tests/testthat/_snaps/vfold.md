@@ -9,7 +9,15 @@
 
 # bad args
 
-    `v` must be a single positive integer
+    `v` must be a single positive integer greater than 1
+
+---
+
+    `v` must be a single positive integer greater than 1
+
+---
+
+    `v` must be a single positive integer greater than 1
 
 ---
 
@@ -18,6 +26,14 @@
 ---
 
     Repeated resampling when `v` is 150 would create identical resamples
+
+---
+
+    `repeats` must be a single positive integer
+
+---
+
+    `repeats` must be a single positive integer
 
 # printing
 
@@ -47,6 +63,14 @@
 
     Repeated resampling when `v` is `NULL` would create identical resamples
 
+---
+
+    Code
+      group_vfold_cv(Orange, v = 1, group = "Tree")
+    Condition
+      Error in `group_vfold_cv()`:
+      ! `v` must be a single positive integer greater than 1
+
 # grouping -- other balance methods
 
     Code
@@ -61,6 +85,44 @@
       3 <split [2360/570]> Resample3
       4 <split [2278/652]> Resample4
       5 <split [2347/583]> Resample5
+
+# grouping -- strata
+
+    Code
+      sizes4
+    Output
+      # A tibble: 5 x 5
+        analysis assessment      n     p id       
+           <int>      <int>  <int> <int> <chr>    
+      1    80004      19996 100000     3 Resample1
+      2    79850      20150 100000     3 Resample2
+      3    79912      20088 100000     3 Resample3
+      4    80131      19869 100000     3 Resample4
+      5    80103      19897 100000     3 Resample5
+
+---
+
+    Leaving `v = NULL` while using stratification will set `v` to the number of groups present in the least common stratum.
+    i Set `v` explicitly to override this warning.
+
+---
+
+    Code
+      sizes5
+    Output
+      # A tibble: 5 x 5
+        analysis assessment      n     p id       
+           <int>      <int>  <int> <int> <chr>    
+      1    80096      19904 100000     3 Resample1
+      2    79962      20038 100000     3 Resample2
+      3    79928      20072 100000     3 Resample3
+      4    80058      19942 100000     3 Resample4
+      5    79956      20044 100000     3 Resample5
+
+---
+
+    Leaving `v = NULL` while using stratification will set `v` to the number of groups present in the least common stratum.
+    i Set `v` explicitly to override this warning.
 
 # grouping -- printing
 
@@ -87,5 +149,4 @@
       1 <split [36/18]> Resample1
       2 <split [36/18]> Resample2
       # ... with 1 more row
-      # i Use `print(n = ...)` to see more rows
 

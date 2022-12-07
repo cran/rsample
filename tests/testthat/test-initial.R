@@ -10,7 +10,7 @@ test_that("default param", {
 
 test_that("default time param", {
   rs1 <- initial_time_split(dat1)
-  expect_equal(class(rs1), c("initial_split", "rsplit"))
+  expect_equal(class(rs1), c("initial_time_split", "initial_split", "rsplit"))
   tr1 <- training(rs1)
   ts1 <- testing(rs1)
   expect_equal(nrow(tr1), floor(nrow(dat1) * 3 / 4))
@@ -20,7 +20,7 @@ test_that("default time param", {
 
 test_that("default time param with lag", {
   rs1 <- initial_time_split(dat1, lag = 5)
-  expect_equal(class(rs1), c("initial_split", "rsplit"))
+  expect_equal(class(rs1), c("initial_time_split", "initial_split", "rsplit"))
   tr1 <- training(rs1)
   ts1 <- testing(rs1)
   expect_equal(nrow(tr1), floor(nrow(dat1) * 3 / 4))
@@ -72,6 +72,28 @@ test_that("`prop` computes the proportion for analysis (#217)", {
 
     expect_identical(actual, expect)
   }
+})
+
+test_that("grouping -- strata", {
+  set.seed(11)
+
+  n_common_class <- 70
+  n_rare_class <- 30
+
+  group_table <- tibble(
+    group = 1:100,
+    outcome = sample(c(rep(0, n_common_class), rep(1, n_rare_class)))
+  )
+  observation_table <- tibble(
+    group = sample(1:100, 5e4, replace = TRUE),
+    observation = 1:5e4
+  )
+  sample_data <- dplyr::full_join(group_table, observation_table, by = "group")
+  rs4 <- group_initial_split(sample_data, group, strata = outcome)
+  expect_equal(mean(as.data.frame(rs4)$outcome == 1), 0.3, tolerance = 1e-2)
+
+  expect_identical(length(intersect(rs4$in_ind, rs4$out_id)), 0L)
+
 })
 
 test_that("`prop` computes the proportion for group analysis", {

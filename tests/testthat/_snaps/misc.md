@@ -45,7 +45,6 @@
        9 <split [1/1]> Slice09
       10 <split [1/1]> Slice10
       # ... with 39 more rows
-      # i Use `print(n = ...)` to see more rows
 
 ---
 
@@ -90,7 +89,6 @@
        9 <split [1/1]> Slice09
       10 <split [1/1]> Slice10
       # ... with 39 more rows
-      # i Use `print(n = ...)` to see more rows
 
 ---
 
@@ -115,7 +113,6 @@
        9 <split [13/1]> Slice09
       10 <split [14/1]> Slice10
       # ... with 35 more rows
-      # i Use `print(n = ...)` to see more rows
 
 ---
 
@@ -142,4 +139,39 @@
 ---
 
     `rset` must be an rset object
+
+# get_rsplit()
+
+    Code
+      get_rsplit(val, 3)
+    Condition
+      Error in `get_rsplit()`:
+      ! `index` must be a length-1 integer between 1 and 1.
+      x A value of 3 was provided.
+
+---
+
+    Code
+      get_rsplit(val, c(1, 2))
+    Condition
+      Error in `get_rsplit()`:
+      ! `index` must be a length-1 integer between 1 and 1.
+      x Index was of length 2.
+
+---
+
+    Code
+      get_rsplit(val, 1.5)
+    Condition
+      Error in `get_rsplit()`:
+      ! `index` must be a length-1 integer between 1 and 1.
+      x A value of 1.5 was provided.
+
+---
+
+    Code
+      get_rsplit(warpbreaks, 1)
+    Condition
+      Error in `get_rsplit()`:
+      ! No `get_rsplit()` method for this class(es) 'data.frame'
 

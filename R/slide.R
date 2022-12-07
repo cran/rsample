@@ -19,7 +19,7 @@
 #'   This is extremely useful for constructing rolling monthly or yearly
 #'   windows from daily data.
 #'
-#' @inheritParams ellipsis::dots_empty
+#' @inheritParams rlang::args_dots_empty
 #'
 #' @param data A data frame.
 #'
@@ -213,7 +213,7 @@ sliding_window <- function(data,
                            complete = TRUE,
                            step = 1L,
                            skip = 0L) {
-  ellipsis::check_dots_empty()
+  rlang::check_dots_empty()
 
   if (!is.data.frame(data)) {
     rlang::abort("`data` must be a data frame.")
@@ -296,7 +296,7 @@ sliding_index <- function(data,
                           complete = TRUE,
                           step = 1L,
                           skip = 0L) {
-  ellipsis::check_dots_empty()
+  rlang::check_dots_empty()
 
   if (!is.data.frame(data)) {
     rlang::abort("`data` must be a data frame.")
@@ -386,7 +386,7 @@ sliding_period <- function(data,
                            skip = 0L,
                            every = 1L,
                            origin = NULL) {
-  ellipsis::check_dots_empty()
+  rlang::check_dots_empty()
 
   if (!is.data.frame(data)) {
     rlang::abort("`data` must be a data frame.")
@@ -552,8 +552,8 @@ check_skip <- function(x) {
 compute_complete_indices <- function(id_in, id_out) {
   # Remove where either list has a `NULL` element.
   # These are incomplete windows.
-  id_in_na <- vctrs::vec_equal_na(id_in)
-  id_out_na <- vctrs::vec_equal_na(id_out)
+  id_in_na <- vctrs::vec_detect_missing(id_in)
+  id_out_na <- vctrs::vec_detect_missing(id_out)
 
   id_either_na <- id_in_na | id_out_na
 

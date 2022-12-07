@@ -90,7 +90,7 @@ pretty.group_validation_split <- function(x, ...) {
     ") "
   )
   if (has_strata(details)) {
-    res <- paste(res, "using stratification")
+    res <- paste0(res, "using stratification")
   }
   res
 }
@@ -176,12 +176,22 @@ pretty.group_mc_cv <- function(x, ...) {
     " resamples "
   )
 
+  if (has_strata(details)) {
+    res <- paste0(res, "using stratification")
+  }
+
   res
 }
 
 #' @export
 pretty.manual_rset <- function(x, ...) {
   "Manual resampling"
+}
+
+#' @export
+pretty.clustering_cv <- function(x, ...) {
+  details <- attributes(x)
+  paste0(details$v, "-cluster cross-validation")
 }
 
 # The print methods below control the display of rset objects
@@ -354,6 +364,13 @@ print.group_mc_cv <- function(x, ...) {
 print.vfold_cv <- function(x, ...) {
   cat("# ", pretty(x), "\n")
   class(x) <- class(x)[!(class(x) %in% c("vfold_cv", "rset"))]
+  print(x, ...)
+}
+
+#' @export
+print.clustering_cv <- function(x, ...) {
+  cat("#", pretty(x), "\n")
+  class(x) <- class(x)[!(class(x) %in% c("clustering_cv", "rset"))]
   print(x, ...)
 }
 

@@ -79,8 +79,12 @@ test_that("bad args", {
   expect_error(vfold_cv(iris, strata = iris$Species))
   expect_error(vfold_cv(iris, strata = c("Species", "Sepal.Width")))
   expect_snapshot_error(vfold_cv(iris, v = -500))
+  expect_snapshot_error(vfold_cv(iris, v = 1))
+  expect_snapshot_error(vfold_cv(iris, v = NULL))
   expect_snapshot_error(vfold_cv(iris, v = 500))
   expect_snapshot_error(vfold_cv(iris, v = 150, repeats = 2))
+  expect_snapshot_error(vfold_cv(Orange, repeats = 0))
+  expect_snapshot_error(vfold_cv(Orange, repeats = NULL))
 })
 
 test_that("printing", {
@@ -108,6 +112,7 @@ test_that("grouping -- bad args", {
   expect_error(group_vfold_cv(warpbreaks, group = "tension", v = 10))
   expect_snapshot_error(group_vfold_cv(dat1, c, v = 4, repeats = 4))
   expect_snapshot_error(group_vfold_cv(dat1, c, repeats = 4))
+  expect_snapshot(error = TRUE, group_vfold_cv(Orange, v = 1, group = "Tree"))
 })
 
 
@@ -222,6 +227,101 @@ test_that("grouping -- other balance methods", {
     )
   )
 
+})
+
+test_that("grouping -- strata", {
+  set.seed(11)
+
+  n_common_class <- 70
+  n_rare_class <- 30
+
+  group_table <- tibble(
+    group = 1:100,
+    outcome = sample(c(rep(0, n_common_class), rep(1, n_rare_class)))
+  )
+  observation_table <- tibble(
+    group = sample(1:100, 1e5, replace = TRUE),
+    observation = 1:1e5
+  )
+  sample_data <- dplyr::full_join(group_table, observation_table, by = "group")
+  rs4 <- group_vfold_cv(sample_data, group, v = 5, strata = outcome)
+  sizes4 <- dim_rset(rs4)
+  expect_snapshot(sizes4)
+
+  rate <- purrr::map_dbl(
+    rs4$splits,
+    function(x) {
+      dat <- as.data.frame(x)$outcome
+      mean(dat == "1")
+    }
+  )
+  expect_equal(mean(rate), 0.3, tolerance = 1e-2)
+
+  good_holdout <- purrr::map_lgl(
+    rs4$splits,
+    function(x) {
+      length(intersect(x$in_ind, x$out_id)) == 0
+    }
+  )
+  expect_true(all(good_holdout))
+
+  expect_snapshot_warning(
+    group_vfold_cv(sample_data, group, strata = outcome)
+  )
+
+  expect_equal(
+    nrow(
+      suppressWarnings(
+        group_vfold_cv(sample_data, group, strata = outcome)
+      )
+    ),
+    n_rare_class
+  )
+
+  rs5 <- group_vfold_cv(
+    sample_data,
+    group,
+    v = 5,
+    strata = outcome,
+    balance = "observations"
+  )
+  sizes5 <- dim_rset(rs5)
+  expect_snapshot(sizes5)
+
+  rate <- purrr::map_dbl(
+    rs5$splits,
+    function(x) {
+      dat <- as.data.frame(x)$outcome
+      mean(dat == "1")
+    }
+  )
+  expect_equal(mean(rate), 0.3, tolerance = 1e-2)
+
+  good_holdout <- purrr::map_lgl(
+    rs5$splits,
+    function(x) {
+      length(intersect(x$in_ind, x$out_id)) == 0
+    }
+  )
+  expect_true(all(good_holdout))
+
+  expect_snapshot_warning(
+    group_vfold_cv(sample_data, group, strata = outcome)
+  )
+
+  expect_equal(
+    nrow(
+      suppressWarnings(
+        group_vfold_cv(
+          sample_data,
+          group,
+          strata = outcome,
+          balance = "observations"
+        )
+      )
+    ),
+    n_rare_class
+  )
 })
 
 test_that("grouping -- repeated", {
