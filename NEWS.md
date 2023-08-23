@@ -1,3 +1,22 @@
+# rsample 1.2.0
+
+* The new `initial_validation_split()`, along with variants `initial_validation_time_split()` and `group_initial_validation_split()`, generates a three-way split of the data into training, validation, and test sets. With the new `validation_set()`, this can be turned into an `rset` object for tuning (#403, #446).
+
+* `validation_split()`, `validation_time_split()`, and `group_validation_split()` have been soft-deprecated in favor of the new functions implementing a 3-way split (`initial_validation_split()`, `initial_validation_time_split()`, and `group_initial_validation_split()`) (#449).
+
+* Functions which don't use the ellipsis `...` now enforce empty dots (#429).
+
+* `make_splits()` gained an example in the documentation (@AngelFelizR, #432).
+
+* `training()`, `testing()`, `analysis()`, and `assessment()` are now S3 generics with methods for `rsplit` objects. Previously they manually required the input to be an `rsplit` object (#384).
+
+* The `int_*()` functions are now S3 generics and have corresponding methods for class `bootstraps` (#435). 
+
+* The underlying mechanics of data splitting were changed so that `Surv` objects maintain their class. This change affects the row names of the resulting objects; they are reindexed from one instead of being a subset of the original row names (#443).
+
+* rsample does not re-export `gather()` anymore (#451).
+
+
 # rsample 1.1.1
 
 * All grouped resampling functions (`group_vfold_cv()`, `group_mc_cv()`, `group_initial_split()` and `group_validation_split()`, and `group_bootstraps()`) now support stratification. Strata must be constant within each group (@mikemahoney218, #317, #360, #363, #364, #365).

@@ -84,7 +84,8 @@ test_that("printing", {
 
 test_that("rsplit labels", {
   rs <- mc_cv(mtcars)
-  all_labs <- purrr::map_df(rs$splits, labels)
+  all_labs <- purrr::map(rs$splits, labels) %>%
+    list_rbind()
   original_id <- rs[, grepl("^id", names(rs))]
   expect_equal(all_labs, original_id)
 })
@@ -139,7 +140,12 @@ test_that("grouping -- strata", {
     group = sample(1:100, 5e4, replace = TRUE),
     observation = 1:5e4
   )
-  sample_data <- dplyr::full_join(group_table, observation_table, by = "group")
+  sample_data <- dplyr::full_join(
+    group_table,
+    observation_table,
+    by = "group",
+    multiple = "all"
+  )
   rs4 <- group_mc_cv(sample_data, group, times = 5, strata = outcome)
   sizes4 <- dim_rset(rs4)
   expect_snapshot(sizes4)
@@ -222,7 +228,8 @@ test_that("grouping - printing with ...", {
 
 test_that("grouping - rsplit labels", {
   rs <- group_mc_cv(warpbreaks, "tension")
-  all_labs <- purrr::map_df(rs$splits, labels)
+  all_labs <- purrr::map(rs$splits, labels) %>%
+    list_rbind()
   original_id <- rs[, grepl("^id", names(rs))]
   expect_equal(all_labs, original_id)
 })

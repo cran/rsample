@@ -55,7 +55,7 @@ check_tidy <- function(x, std_col = FALSE) {
     list_cols <- names(x)[map_lgl(x, is_list)]
     x <- try(tidyr::unnest(x, cols = all_of(list_cols)), silent = TRUE)
   } else {
-    x <- try(map_dfr(x, ~.x), silent = TRUE)
+    x <- try(map(x, ~.x) %>% list_rbind(), silent = TRUE)
   }
 
   if (inherits(x, "try-error")) {
@@ -184,7 +184,12 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'  `term` and `estimate`). For t-intervals, a
 #'  standard tidy column (usually called `std.err`) is required.
 #'  See the examples below.
-#' @param alpha Level of significance
+#' @param alpha Level of significance.
+#' @param .fn A function to calculate statistic of interest. The
+#'  function should take an `rsplit` as the first argument and the `...` are
+#'  required.
+#' @param ... Arguments to pass to `.fn` (`int_bca()` only).
+#' @references \url{https://rsample.tidymodels.org/articles/Applications/Intervals.html}
 #' @return Each function returns a tibble with columns `.lower`,
 #'  `.estimate`, `.upper`, `.alpha`, `.method`, and `term`.
 #'  `.method` is the type of interval (eg. "percentile",
@@ -243,7 +248,14 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'   int_pctl(correlations)
 #' }
 #' @export
-int_pctl <- function(.data, statistics, alpha = 0.05) {
+int_pctl <- function(.data, ...) {
+  UseMethod("int_pctl")
+}
+
+#' @export
+#' @rdname int_pctl
+int_pctl.bootstraps <- function(.data, statistics, alpha = 0.05, ...) {
+  check_dots_empty()
   check_rset(.data, app = FALSE)
   if (length(alpha) != 1 || !is.numeric(alpha)) {
     abort("`alpha` must be a single numeric value.")
@@ -315,10 +327,16 @@ t_single <- function(stats, std_err, is_orig, alpha = 0.05) {
   )
 }
 
+#' @rdname int_pctl
+#' @export
+int_t <- function(.data, ...) {
+  UseMethod("int_t")
+}
 
 #' @rdname int_pctl
 #' @export
-int_t <- function(.data, statistics, alpha = 0.05) {
+int_t.bootstraps <- function(.data, statistics, alpha = 0.05, ...) {
+  check_dots_empty()
   check_rset(.data)
   if (length(alpha) != 1 || !is.numeric(alpha)) {
     abort("`alpha` must be a single numeric value.")
@@ -366,13 +384,13 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
     rlang::abort("`.fn` failed.")
   }
 
-  loo_res <- furrr::future_map_dfr(loo_rs$splits, .fn, ...)
+  loo_res <- furrr::future_map(loo_rs$splits, .fn, ...) %>% list_rbind()
 
   loo_estimate <-
     loo_res %>%
     dplyr::group_by(term) %>%
     dplyr::summarize(loo = mean(estimate, na.rm = TRUE)) %>%
-    dplyr::inner_join(loo_res, by = "term") %>%
+    dplyr::inner_join(loo_res, by = "term", multiple = "all") %>%
     dplyr::group_by(term) %>%
     dplyr::summarize(
       cubed = sum((loo - estimate)^3),
@@ -411,15 +429,15 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
     )
 }
 
+#' @rdname int_pctl
+#' @export
+int_bca <- function(.data, ...) {
+  UseMethod("int_bca")
+}
 
 #' @rdname int_pctl
-#' @param .fn A function to calculate statistic of interest. The
-#'  function should take an `rsplit` as the first argument and the `...` are
-#'  required.
-#' @param ... Arguments to pass to `.fn`.
-#' @references \url{https://rsample.tidymodels.org/articles/Applications/Intervals.html}
 #' @export
-int_bca <- function(.data, statistics, alpha = 0.05, .fn, ...) {
+int_bca.bootstraps <- function(.data, statistics, alpha = 0.05, .fn, ...) {
   check_rset(.data)
   if (length(alpha) != 1 || !is.numeric(alpha)) {
     abort("`alpha` must be a single numeric value.")

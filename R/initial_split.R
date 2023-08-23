@@ -41,6 +41,7 @@
 #'
 initial_split <- function(data, prop = 3 / 4,
                           strata = NULL, breaks = 4, pool = 0.1, ...) {
+  check_dots_empty()
   res <-
     mc_cv(
       data = data,
@@ -48,8 +49,7 @@ initial_split <- function(data, prop = 3 / 4,
       strata = {{ strata }},
       breaks = breaks,
       pool = pool,
-      times = 1,
-      ...
+      times = 1
     )
   res <- res$splits[[1]]
   class(res) <- c("initial_split", class(res))
@@ -62,6 +62,7 @@ initial_split <- function(data, prop = 3 / 4,
 #'  during training and testing.
 #' @export
 initial_time_split <- function(data, prop = 3 / 4, lag = 0, ...) {
+  check_dots_empty()
   if (!is.numeric(prop) | prop >= 1 | prop <= 0) {
     rlang::abort("`prop` must be a number on (0, 1).")
   }
@@ -90,23 +91,58 @@ initial_time_split <- function(data, prop = 3 / 4, lag = 0, ...) {
 #' @export
 #' @param x An `rsplit` object produced by `initial_split()` or
 #'  `initial_time_split()`.
-training <- function(x) analysis(x)
+training <- function(x, ...) {
+  UseMethod("training")
+}
+
+#' @export
+#' @rdname initial_split
+training.default <- function(x, ...) {
+  cls <- class(x)
+  cli::cli_abort(
+    "No method for objects of class{?es}: {cls}"
+  )
+}
+
 #' @rdname initial_split
 #' @export
-testing <- function(x) assessment(x)
+training.rsplit <- function(x, ...) {
+  analysis(x, ...)
+}
+
+#' @rdname initial_split
+#' @export
+testing <- function(x, ...) {
+  UseMethod("testing")
+}
+
+#' @export
+#' @rdname initial_split
+testing.default <- function(x, ...) {
+  cls <- class(x)
+  cli::cli_abort(
+    "No method for objects of class{?es}: {cls}"
+  )
+}
+
+#' @rdname initial_split
+#' @export
+testing.rsplit <- function(x, ...) {
+  assessment(x, ...)
+}
 
 #' @inheritParams make_groups
 #' @rdname initial_split
 #' @export
 group_initial_split <- function(data, group, prop = 3 / 4, ..., strata = NULL, pool = 0.1) {
+  check_dots_empty()
 
   if (missing(strata)) {
     res <- group_mc_cv(
         data = data,
         group = {{ group }},
         prop = prop,
-        times = 1,
-        ...
+        times = 1
       )
   } else {
     res <- group_mc_cv(
@@ -114,7 +150,6 @@ group_initial_split <- function(data, group, prop = 3 / 4, ..., strata = NULL, p
         group = {{ group }},
         prop = prop,
         times = 1,
-        ...,
         strata = {{ strata }},
         pool = pool
       )
@@ -122,6 +157,4 @@ group_initial_split <- function(data, group, prop = 3 / 4, ..., strata = NULL, p
   res <- res$splits[[1]]
   class(res) <- c("group_initial_split", "initial_split", class(res))
   res
-
 }
-

@@ -72,7 +72,7 @@ as.integer.rsplit <-
 #' @param row.names `NULL` or a character vector giving the row names for the data frame. Missing values are not allowed.
 #' @param optional A logical: should the column names of the data be checked for legality?
 #' @param data Either "analysis" or "assessment" to specify which data are returned.
-#' @param ...	Additional arguments to be passed to or from methods. Not currently used.
+#' @param ... Not currently used.
 #' @examples
 #' library(dplyr)
 #' set.seed(104)
@@ -109,28 +109,54 @@ as.data.frame.rsplit <-
         )
         rlang::abort(msg)
       }
-      permuted_col <-
-        x$data[as.integer(x, data = data, ...), x$col_id, drop = FALSE]
+      ind <- as.integer(x, data = data, ...)
+      permuted_col <- vctrs::vec_slice(x$data, ind) %>%
+        dplyr::select(x$col_id)
       x$data[, x$col_id] <- permuted_col
       return(x$data)
     }
-    x$data[as.integer(x, data = data, ...), , drop = FALSE]
+    row_ind <- as.integer(x, data = data, ...)
+    vctrs::vec_slice(x$data, row_ind)
   }
 
 #' @rdname as.data.frame.rsplit
 #' @export
 analysis <- function(x, ...) {
-  if (!inherits(x, "rsplit")) {
-    rlang::abort("`x` should be an `rsplit` object")
-  }
+  UseMethod("analysis")
+}
+
+#' @export
+#' @rdname as.data.frame.rsplit
+analysis.default <- function(x, ...) {
+  cls <- class(x)
+  cli::cli_abort(
+    "No method for objects of class{?es}: {cls}"
+  )
+}
+
+#' @export
+#' @rdname as.data.frame.rsplit
+analysis.rsplit <- function(x, ...) {
   as.data.frame(x, data = "analysis", ...)
 }
 #' @rdname as.data.frame.rsplit
 #' @export
 assessment <- function(x, ...) {
-  if (!inherits(x, "rsplit")) {
-    rlang::abort("`x` should be an `rsplit` object")
-  }
+  UseMethod("assessment")
+}
+
+#' @export
+#' @rdname as.data.frame.rsplit
+assessment.default <- function(x, ...) {
+  cls <- class(x)
+  cli::cli_abort(
+    "No method for objects of class{?es}: {cls}"
+  )
+}
+
+#' @rdname as.data.frame.rsplit
+#' @export
+assessment.rsplit <- function(x, ...) {
   as.data.frame(x, data = "assessment", ...)
 }
 

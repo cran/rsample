@@ -44,7 +44,7 @@
        8 <split [1/1]> Slice08
        9 <split [1/1]> Slice09
       10 <split [1/1]> Slice10
-      # ... with 39 more rows
+      # i 39 more rows
 
 ---
 
@@ -88,7 +88,7 @@
        8 <split [1/1]> Slice08
        9 <split [1/1]> Slice09
       10 <split [1/1]> Slice10
-      # ... with 39 more rows
+      # i 39 more rows
 
 ---
 
@@ -112,7 +112,7 @@
        8 <split [12/1]> Slice08
        9 <split [13/1]> Slice09
       10 <split [14/1]> Slice10
-      # ... with 35 more rows
+      # i 35 more rows
 
 ---
 
@@ -127,6 +127,19 @@
         splits          id        
         <list>          <chr>     
       1 <split [37/13]> validation
+
+---
+
+    Code
+      reshuffle_rset(rset_subclasses[[non_random_classes[[i]]]])
+    Condition
+      Warning:
+      `reshuffle_rset()` will return an identical rset when called on validation_set objects
+    Output
+      # A tibble: 1 x 2
+        splits          id        
+        <list>          <chr>     
+      1 <split [30/10]> validation
 
 ---
 

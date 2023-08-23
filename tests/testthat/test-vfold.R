@@ -44,7 +44,7 @@ test_that("repeated", {
 
 test_that("strata", {
   set.seed(11)
-  skip_if_not(rlang::is_installed("modeldata"))
+  skip_if_not_installed("modeldata")
   data("mlc_churn", package = "modeldata")
   rs3 <- vfold_cv(mlc_churn, repeats = 2, strata = "voice_mail_plan")
   sizes3 <- dim_rset(rs3)
@@ -94,12 +94,14 @@ test_that("printing", {
 
 test_that("rsplit labels", {
   rs <- vfold_cv(mtcars)
-  all_labs <- purrr::map_df(rs$splits, labels)
+  all_labs <- purrr::map(rs$splits, labels) %>%
+    list_rbind()
   original_id <- rs[, grepl("^id", names(rs))]
   expect_equal(all_labs, original_id)
 
   rs2 <- vfold_cv(mtcars, repeats = 4)
-  all_labs2 <- purrr::map_df(rs2$splits, labels)
+  all_labs2 <- purrr::map(rs2$splits, labels) %>%
+    list_rbind()
   original_id2 <- rs2[, grepl("^id", names(rs2))]
   expect_equal(all_labs2, original_id2)
 })
@@ -194,7 +196,7 @@ test_that("grouping -- tibble input", {
 })
 
 test_that("grouping -- other balance methods", {
-  skip_if_not(rlang::is_installed("modeldata"))
+  skip_if_not_installed("modeldata")
   data(ames, package = "modeldata")
   set.seed(11)
   rs1 <- group_vfold_cv(
@@ -243,7 +245,12 @@ test_that("grouping -- strata", {
     group = sample(1:100, 1e5, replace = TRUE),
     observation = 1:1e5
   )
-  sample_data <- dplyr::full_join(group_table, observation_table, by = "group")
+  sample_data <- dplyr::full_join(
+    group_table,
+    observation_table,
+    by = "group",
+    multiple = "all"
+  )
   rs4 <- group_vfold_cv(sample_data, group, v = 5, strata = outcome)
   sizes4 <- dim_rset(rs4)
   expect_snapshot(sizes4)
@@ -357,7 +364,8 @@ test_that("grouping -- printing with ...", {
 
 test_that("grouping -- rsplit labels", {
   rs <- group_vfold_cv(warpbreaks, "tension")
-  all_labs <- purrr::map_df(rs$splits, labels)
+  all_labs <- purrr::map(rs$splits, labels) %>%
+    list_rbind()
   original_id <- rs[, grepl("^id", names(rs))]
   expect_equal(all_labs, original_id)
 })

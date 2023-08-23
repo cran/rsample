@@ -14,7 +14,7 @@ bt_norm <-
   )
 
 test_that("Bootstrap estimate of mean is close to estimate of mean from normal distribution", {
-  skip_if_not(rlang::is_installed("broom"))
+  skip_if_not_installed("broom")
   skip_on_cran()
   ttest <- broom::tidy(t.test(rand_nums))
   ttest_lower_conf <- broom::tidy(t.test(rand_nums, conf.level = 0.8))
@@ -82,7 +82,8 @@ test_that("Bootstrap estimate of mean is close to estimate of mean from normal d
 # ------------------------------------------------------------------------------
 
 test_that("Wrappers -- selection of multiple variables works", {
-  skip_if_not(rlang::is_installed("modeldata"))
+  skip_if_not_installed("broom")
+  skip_if_not_installed("modeldata")
   data("attrition", package = "modeldata")
   func <- function(split, ...) {
     lm(Age ~ HourlyRate + DistanceFromHome, data = analysis(split)) %>% tidy()
@@ -176,7 +177,9 @@ test_that("bad input", {
   expect_error(int_pctl(bt_small, stats, alpha = c(0.05, 0.2)))
   expect_error(int_t(bt_small, stats, alpha = "potato"))
   expect_error(int_bca(bt_small, stats, alpha = 1:2, .fn = get_stats))
-
+  expect_error(int_pctl(vfold_cv(mtcars)))
+  expect_error(int_t(vfold_cv(mtcars)))
+  expect_error(int_bca(vfold_cv(mtcars)))
 
   bad_bt_norm <-
     bt_norm %>%
@@ -232,7 +235,7 @@ test_that("bad input", {
 # ------------------------------------------------------------------------------
 
 test_that("regression intervals", {
-  skip_if_not(rlang::is_installed("broom"))
+  skip_if_not_installed("broom")
   skip_on_cran()
 
   expect_error(

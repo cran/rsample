@@ -26,9 +26,9 @@ test_that("default time param with lag", {
   expect_equal(nrow(tr1), floor(nrow(dat1) * 3 / 4))
   expect_equal(nrow(ts1), ceiling(nrow(dat1) / 4) + 5)
   expect_equal(tr1, dplyr::slice(dat1, 1:floor(nrow(dat1) * 3 / 4)))
-  expect_equal(ts1, dat1[(floor(nrow(dat1) * 3 / 4) + 1 - 5):nrow(dat1), ])
+  expect_equal(ts1, dat1[(floor(nrow(dat1) * 3 / 4) + 1 - 5):nrow(dat1), ], ignore_attr = "row.names")
 
-  skip_if_not(rlang::is_installed("modeldata"))
+  skip_if_not_installed("modeldata")
   data(drinks, package = "modeldata")
 
   # Whole numbers only
@@ -88,7 +88,12 @@ test_that("grouping -- strata", {
     group = sample(1:100, 5e4, replace = TRUE),
     observation = 1:5e4
   )
-  sample_data <- dplyr::full_join(group_table, observation_table, by = "group")
+  sample_data <- dplyr::full_join(
+    group_table,
+    observation_table,
+    by = "group",
+    multiple = "all"
+  )
   rs4 <- group_initial_split(sample_data, group, strata = outcome)
   expect_equal(mean(as.data.frame(rs4)$outcome == 1), 0.3, tolerance = 1e-2)
 

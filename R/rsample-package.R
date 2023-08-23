@@ -2,25 +2,26 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom lifecycle deprecated
 ## usethis namespace: end
 NULL
 
 #------------------------------------------------------------------------------#
 
 #' @importFrom utils globalVariables
-#' @importFrom purrr map map_df map2 map_dfr map_dbl pluck map_lgl
+#' @importFrom purrr map map2 map_dbl pluck map_lgl list_rbind
 #' @importFrom tibble tibble is_tibble as_tibble obj_sum
 #' @importFrom pillar type_sum
-#' @importFrom tidyr gather unnest
+#' @importFrom tidyr unnest
 #' @importFrom dplyr select %>% bind_cols bind_rows arrange_ arrange full_join
 #' @importFrom dplyr mutate last ungroup group_by inner_join summarize do case_when
 #' @importFrom vctrs vec_unique_count vec_count vec_slice vec_in vec_ptype_abbr
 #' @importFrom rlang !! is_call is_string enquo quos exec is_list abort warn .data %||%
+#' @importFrom rlang check_dots_empty
 #' @importFrom methods formalArgs
 #' @importFrom stats quantile setNames qnorm pnorm dist
 #' @importFrom tidyselect vars_select one_of
-#' @importFrom furrr future_map_dfr
-#' @importFrom tidyr gather
+#' @importFrom furrr future_map
 
 #------------------------------------------------------------------------------#
 

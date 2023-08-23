@@ -1,5 +1,5 @@
 test_that("reverse_splits is working", {
-  skip_if_not(rlang::is_installed("withr"))
+  skip_if_not_installed("withr")
 
   reversable_subclasses <- setdiff(names(rset_subclasses), "permutations")
   reversable_subclasses <- rset_subclasses[reversable_subclasses]
@@ -34,8 +34,10 @@ test_that("reverse_splits is working", {
 })
 
 test_that("reshuffle_rset is working", {
+  skip_if_not_installed("withr")
+  # for `validation_split()` and variants
+  withr::local_options(lifecycle_verbosity = "quiet")
 
-  skip_if_not(rlang::is_installed("withr"))
   supported_subclasses <- rset_subclasses[
     setdiff(names(rset_subclasses), c("manual_rset"))
   ]
@@ -103,7 +105,12 @@ test_that("reshuffle_rset is working", {
     group = sample(1:100, 5e4, replace = TRUE),
     observation = 1:5e4
   )
-  sample_data <- dplyr::full_join(group_table, observation_table, by = "group")
+  sample_data <- dplyr::full_join(
+    group_table,
+    observation_table,
+    by = "group",
+    multiple = "all"
+  )
 
   for (i in seq_along(grouped_strata)) {
     # Fit those functions with non-default arguments:
@@ -143,6 +150,9 @@ test_that("reshuffle_rset is working", {
 })
 
 test_that("get_rsplit()", {
+  skip_if_not_installed("withr")
+  # for `validation_split()` and variants
+  withr::local_options(lifecycle_verbosity = "quiet")
 
   val <- withr::with_seed(
     11,

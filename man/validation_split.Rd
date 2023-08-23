@@ -29,7 +29,7 @@ too small and should be pooled into another group. We do not recommend
 decreasing this argument below its default of 0.1 because of the dangers
 of stratifying groups that are too small.}
 
-\item{...}{Not currently used.}
+\item{...}{These dots are for future extensions and must be empty.}
 
 \item{lag}{A value to include a lag between the assessment
 and analysis set. This is useful if lagged predictors will be used
@@ -46,6 +46,15 @@ and a column called \code{id} that has a character string with the resample
 identifier.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+This function is deprecated because it's part of an approach to constructing
+a training, validation, and testing set by doing a sequence of two binary
+splits: testing / not-testing (with \code{\link[=initial_split]{initial_split()}} or one of its variants)
+and then not-testing split into training/validation with \code{validation_split()}.
+Instead, now use \code{\link[=initial_validation_split]{initial_validation_split()}} or one if its variants to
+construct the three sets via one 3-way split.
+
 \code{validation_split()} takes a single random sample (without replacement) of
 the original data set to be used for analysis. All other data points are
 added to the assessment set (to be used as the validation set).
@@ -54,6 +63,11 @@ for training, instead of a random selection.
 \code{group_validation_split()} creates splits of the data based
 on some grouping variable, so that all data in a "group" is assigned to
 the same split.
+
+Note that the input \code{data} to \code{validation_split()}, \code{validation_time_split()},
+and \code{group_validation_split()} should \emph{not} contain the testing data. To
+create a three-way split directly of the entire data set, use
+\code{\link[=initial_validation_split]{initial_validation_split()}}.
 }
 \details{
 With a \code{strata} argument, the random sampling is conducted
@@ -66,11 +80,21 @@ pooled together; see \code{\link[=make_strata]{make_strata()}} for more details.
 }
 \examples{
 \dontshow{if (rlang::is_installed("modeldata")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-validation_split(mtcars, prop = .9)
+cars_split <- initial_split(mtcars)
+cars_not_testing <- training(cars_split)
+validation_split(cars_not_testing, prop = .9)
+group_validation_split(cars_not_testing, cyl)
 
 data(drinks, package = "modeldata")
-validation_time_split(drinks)
+validation_time_split(drinks[1:200,])
 
-group_validation_split(mtcars, cyl)
+# Alternative
+cars_split_3 <- initial_validation_split(mtcars)
+validation_set(cars_split_3)
 \dontshow{\}) # examplesIf}
 }
+\seealso{
+\code{\link[=initial_validation_split]{initial_validation_split()}}, \code{\link[=group_initial_validation_split]{group_initial_validation_split()}},
+\code{\link[=validation_set]{validation_set()}}
+}
+\keyword{internal}

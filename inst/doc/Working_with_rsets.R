@@ -64,7 +64,7 @@ rs_obj
 rs_obj$accuracy <- map_dbl(rs_obj$results, function(x) mean(x$correct))
 summary(rs_obj$accuracy)
 
-## ----type_plot--------------------------------------------------------------------------
+## ----type_plot, fig.alt = "Two boxplots of monthly income separated by gender, showing a slight difference in median but largely overlapping boxes."----
 ggplot(attrition, aes(x = Gender, y = MonthlyIncome)) + 
   geom_boxplot() + 
   scale_y_log10()
@@ -83,7 +83,7 @@ bt_resamples <- bootstraps(attrition, times = 500)
 ## ----stats------------------------------------------------------------------------------
 bt_resamples$wage_diff <- map_dbl(bt_resamples$splits, median_diff)
 
-## ----stats_plot-------------------------------------------------------------------------
+## ----stats_plot, fig.alt = "The bootstrap distribution of the differences in median monthly income: it is slightly bimodal and left-skewed."----
 ggplot(bt_resamples, aes(x = wage_diff)) + 
   geom_line(stat = "density", adjust = 1.25) + 
   xlab("Difference in Median Monthly Income (Female - Male)")
