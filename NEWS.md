@@ -1,3 +1,10 @@
+# rsample 1.2.1
+
+* `nested_cv()` no longer errors if `outside` is a long call (#459, #461).
+
+* The `validation_set` class now has its own `pretty()` method (#456).
+
+
 # rsample 1.2.0
 
 * The new `initial_validation_split()`, along with variants `initial_validation_time_split()` and `group_initial_validation_split()`, generates a three-way split of the data into training, validation, and test sets. With the new `validation_set()`, this can be turned into an `rset` object for tuning (#403, #446).
