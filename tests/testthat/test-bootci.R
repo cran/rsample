@@ -1,21 +1,17 @@
-n <- 1000
-mu <- 10
-sigma <- 1
-
-set.seed(888)
-rand_nums <- rnorm(n, mu, sigma)
-dat <- data.frame(x = rand_nums)
-
-set.seed(456765)
-bt_norm <-
-  bootstraps(dat, times = 1000, apparent = TRUE) %>%
-  dplyr::mutate(
-    stats = purrr::map(splits, ~ get_stats(.x))
-  )
-
 test_that("Bootstrap estimate of mean is close to estimate of mean from normal distribution", {
   skip_if_not_installed("broom")
   skip_on_cran()
+
+  set.seed(888)
+  rand_nums <- rnorm(n = 1000, mean = 10, sd = 1)
+  dat <- data.frame(x = rand_nums)
+
+  set.seed(456765)
+  bt_norm <- bootstraps(dat, times = 1000, apparent = TRUE) %>%
+    dplyr::mutate(
+      stats = purrr::map(splits, ~ get_stats(.x))
+    )
+
   ttest <- broom::tidy(t.test(rand_nums))
   ttest_lower_conf <- broom::tidy(t.test(rand_nums, conf.level = 0.8))
   single_pct_res <- int_pctl(bt_norm, stats)
@@ -153,40 +149,99 @@ test_that("Upper & lower confidence interval does not contain NA", {
 
 # ------------------------------------------------------------------------------
 
-set.seed(456765)
-bt_small <-
-  bootstraps(dat, times = 10, apparent = TRUE) %>%
-  dplyr::mutate(
-    stats = purrr::map(splits, ~ get_stats(.x)),
-    junk = 1:11
-  )
+test_that(
+  "Sufficient replications needed to sufficiently reduce Monte Carlo sampling Error for BCa method",
+  {
+    set.seed(888)
+    rand_nums <- rnorm(n = 1000, mean = 10, sd = 1)
+    dat <- data.frame(x = rand_nums)
+    set.seed(456765)
+    bt_small <-
+      bootstraps(dat, times = 10, apparent = TRUE) %>%
+      dplyr::mutate(
+        stats = purrr::map(splits, ~ get_stats(.x)),
+        junk = 1:11
+     )
+
+    expect_snapshot(int_pctl(bt_small, stats))
+    expect_snapshot(int_t(bt_small, stats))
+  }
+)
 
 test_that(
   "Sufficient replications needed to sufficiently reduce Monte Carlo sampling Error for BCa method",
   {
-    expect_warning(int_pctl(bt_small, stats))
-    expect_warning(int_t(bt_small, stats))
-    expect_warning(int_bca(bt_small, stats, .fn = get_stats))
+    skip("#539 message about loading purrr in the snapshot in R CMD check hard")
+    # unskip this by moving the expectation back into the test_that block above
+
+    set.seed(888)
+    rand_nums <- rnorm(n = 1000, mean = 10, sd = 1)
+    dat <- data.frame(x = rand_nums)
+    set.seed(456765)
+    bt_small <-
+      bootstraps(dat, times = 10, apparent = TRUE) %>%
+      dplyr::mutate(
+        stats = purrr::map(splits, ~ get_stats(.x)),
+        junk = 1:11
+     )
+
+    expect_snapshot(int_bca(bt_small, stats, .fn = get_stats))
   }
 )
 
-
 test_that("bad input", {
-  expect_error(int_pctl(bt_small, id))
-  expect_error(int_pctl(bt_small, junk))
-  expect_error(int_pctl(bt_small, stats, alpha = c(0.05, 0.2)))
-  expect_error(int_t(bt_small, stats, alpha = "potato"))
-  expect_error(int_bca(bt_small, stats, alpha = 1:2, .fn = get_stats))
-  expect_error(int_pctl(vfold_cv(mtcars)))
-  expect_error(int_t(vfold_cv(mtcars)))
-  expect_error(int_bca(vfold_cv(mtcars)))
+  set.seed(888)
+  rand_nums <- rnorm(n = 1000, mean = 10, sd = 1)
+  dat <- data.frame(x = rand_nums)
+  set.seed(456765)
+  bt_small <-
+    bootstraps(dat, times = 10, apparent = TRUE) %>%
+    dplyr::mutate(
+      stats = purrr::map(splits, ~ get_stats(.x)),
+      junk = 1:11
+    )
+
+  expect_snapshot(error = TRUE, {
+    int_pctl(bt_small, id)
+  })
+  expect_snapshot(error = TRUE, {
+    int_pctl(bt_small, junk)
+  })
+  expect_snapshot(error = TRUE, {
+    int_pctl(bt_small, stats, alpha = c(0.05, 0.2))
+  })
+  expect_snapshot(error = TRUE, {
+    int_t(bt_small, stats, alpha = "potato")
+  })
+  expect_snapshot(error = TRUE, {
+    int_bca(bt_small, stats, alpha = 1:2, .fn = get_stats)
+  })
+  expect_snapshot(error = TRUE, {
+    int_pctl(vfold_cv(mtcars))
+  })
+  expect_snapshot(error = TRUE, {
+    int_t(vfold_cv(mtcars))
+  })
+  expect_snapshot(error = TRUE, {
+    int_bca(vfold_cv(mtcars))
+  })
+
+  set.seed(888)
+  rand_nums <- rnorm(n = 1000, mean = 10, sd = 1)
+  dat <- data.frame(x = rand_nums)
+
+  set.seed(456765)
+  bt_norm <- bootstraps(dat, times = 1000, apparent = TRUE) %>%
+    dplyr::mutate(
+      stats = purrr::map(splits, ~ get_stats(.x))
+    )
 
   bad_bt_norm <-
     bt_norm %>%
     mutate(stats = purrr::map(stats, ~ .x[, 1:2]))
-  expect_error(int_t(bad_bt_norm, stats))
-
-  expect_error(int_bca(bad_bt_norm, stats))
+  expect_snapshot(error = TRUE, {
+    int_t(bad_bt_norm, stats)
+  })
 
   no_dots <- function(split) {
     dat <- analysis(split)
@@ -197,21 +252,20 @@ test_that("bad input", {
       std.error = sqrt(var(x, na.rm = TRUE) / sum(!is.na(x)))
     )
   }
-  expect_error(
-    int_bca(bt_norm, stats, .fn = no_dots),
-    "must have an argument"
-  )
+  expect_snapshot(error = TRUE, {
+    int_bca(bt_norm, stats, .fn = no_dots)
+  })
 
-  expect_error(int_pctl(as.data.frame(bt_norm), stats))
-  expect_error(int_t(as.data.frame(bt_norm), stats))
-  expect_error(int_bca(as.data.frame(bt_norm), stats, .fn = get_stats))
+  expect_snapshot(error = TRUE, {
+    int_pctl(as.data.frame(bt_norm), stats)
+  })
+  expect_snapshot(error = TRUE, {
+    int_t(as.data.frame(bt_norm), stats)
+  })
 
-  expect_error(
-    int_t(bt_norm %>% dplyr::filter(id != "Apparent"), stats)
-  )
-  expect_error(
-    int_bca(bt_norm %>% dplyr::filter(id != "Apparent"), stats, .fn = get_stats)
-  )
+  expect_snapshot(error = TRUE, {
+    int_bca(as.data.frame(bt_norm), stats, .fn = get_stats)
+  })
 
   poo <- function(x) {
     x$estimate <- "a"
@@ -220,68 +274,130 @@ test_that("bad input", {
   badder_bt_norm <-
     bt_norm %>%
     mutate(
-      bad_term = purrr::map(stats, ~ .x %>% setNames(c("a", "estimate", "std.err"))),
+      bad_term = purrr::map(
+        stats,
+        ~ .x %>% setNames(c("a", "estimate", "std.err"))
+      ),
       bad_est = purrr::map(stats, ~ .x %>% setNames(c("term", "b", "std.err"))),
-      bad_err = purrr::map(stats, ~ .x %>% setNames(c("term", "estimate", "c"))),
+      bad_err = purrr::map(
+        stats,
+        ~ .x %>% setNames(c("term", "estimate", "c"))
+      ),
       bad_num = purrr::map(stats, ~ poo(.x))
     )
-  expect_error(int_pctl(badder_bt_norm, bad_term))
-  expect_error(int_t(badder_bt_norm, bad_err))
-  expect_error(int_bca(badder_bt_norm, bad_est, .fn = get_stats))
-  expect_error(int_pctl(badder_bt_norm, bad_num))
+  expect_snapshot(error = TRUE, {
+    int_pctl(badder_bt_norm, bad_term)
+  })
+  expect_snapshot(error = TRUE, {
+    int_t(badder_bt_norm, bad_err)
+  })
+  expect_snapshot(error = TRUE, {
+    int_bca(badder_bt_norm, bad_est, .fn = get_stats)
+  })
+  expect_snapshot(error = TRUE, {
+    int_pctl(badder_bt_norm, bad_num)
+  })
 })
 
+test_that("checks for apparent bootstrap", {
+  rs_boot <- bootstraps(mtcars, times = 10, apparent = FALSE)
+  expect_snapshot(error = TRUE, {
+    int_t(rs_boot)
+  })
+  expect_snapshot(error = TRUE, {
+    int_bca(rs_boot)
+  })
+})
+
+test_that("checks input for statistics", {
+  dat <- data.frame(x = rnorm(n = 1000, mean = 10, sd = 1))
+  rs_boot <- bootstraps(dat, times = 10, apparent = TRUE) 
+  
+  rs_boot_missing_term <- rs_boot %>%
+    dplyr::mutate(
+      stats = purrr::map(1:11, ~ tibble(estimate = 1))
+    )
+  expect_snapshot(error = TRUE, {
+    int_t(rs_boot_missing_term, stats)
+  })
+
+  rs_boot_missing_estimate <- rs_boot %>%
+    dplyr::mutate(
+      stats = purrr::map(1:11, ~ tibble(term = 1))
+    )
+  expect_snapshot(error = TRUE, {
+    int_t(rs_boot_missing_estimate, stats)
+  })
+
+  rs_boot_missing_std_err <- rs_boot %>%
+    dplyr::mutate(
+      stats = purrr::map(1:11, ~ tibble(term = 1, estimate = 2))
+    )
+  expect_snapshot(error = TRUE, {
+    int_t(rs_boot_missing_std_err, stats)
+  })
+})
 
 # ------------------------------------------------------------------------------
 
-test_that("regression intervals", {
+test_that("compute intervals with additional grouping terms", {
   skip_if_not_installed("broom")
-  skip_on_cran()
 
-  expect_error(
-    {
-      set.seed(1)
-      int_1 <- reg_intervals(mpg ~ disp + wt, data = mtcars)
-    },
-    regexp = NA
-  )
+  lm_coefs <- function(dat) {
+    mod <- lm(mpg ~ I(1/disp), data = dat)
+    tidy(mod)
+  }
 
-  expect_equal(
-    names(int_1),
-    c("term", ".lower", ".estimate", ".upper", ".alpha", ".method")
-  )
+  coef_by_engine_shape <- function(split, ...) {
+    split %>%
+      analysis() %>%
+      dplyr::rename(.vs = vs) %>%
+      tidyr::nest(.by = .vs) %>%
+      dplyr::mutate(coefs = map(data, lm_coefs)) %>%
+      dplyr::select(-data) %>%
+      tidyr::unnest(coefs)
+  }
 
-  expect_snapshot({
-    skip_if(new_rng_snapshots)
-    set.seed(123)
-    int_2 <- reg_intervals(
-      mpg ~ disp + wt,
-      data = mtcars,
-      filter = term == "wt",
-      model_fn = "glm",
-      keep_reps = TRUE
+  set.seed(270)
+  boot_rs <-
+    bootstraps(mtcars, 1000, apparent = TRUE) %>%
+    dplyr::mutate(results = purrr::map(splits, coef_by_engine_shape))
+
+  pctl_res <- int_pctl(boot_rs, results)
+  t_res <- int_t(boot_rs, results)
+  bca_res <- int_bca(boot_rs, results, .fn = coef_by_engine_shape)
+
+  exp_ptype <-
+    tibble::tibble(
+      term = character(0),
+      .vs = numeric(0),
+      .lower = numeric(0),
+      .estimate = numeric(0),
+      .upper = numeric(0),
+      .alpha = numeric(0),
+      .method = character(0)
     )
-    int_2
-  })
 
-  expect_equal(
-    names(int_2),
-    c("term", ".lower", ".estimate", ".upper", ".alpha", ".method", ".replicates")
-  )
-  expect_true(nrow(int_2) == 1)
-  expect_true(all(int_2$term == "wt"))
+  expect_equal(pctl_res[0, ], exp_ptype)
+  expect_equal(t_res[0, ], exp_ptype)
+  expect_equal(bca_res[0, ], exp_ptype)
+  
+  exp_combos <-
+    tibble::tribble(
+      ~term,         ~.vs,
+      "(Intercept)",    0,
+      "(Intercept)",    1,
+      "I(1/disp)",      0,
+      "I(1/disp)",      1
+    )
 
+  group_patterns <- function(x) {
+    dplyr::distinct(x, term, .vs) %>%
+      dplyr::arrange(term, .vs)
+  }
 
-  expect_error(
-    reg_intervals(mpg ~ disp + wt, data = mtcars, model_fn = "potato"),
-    "`model_fn` must be one of"
-  )
-  expect_error(
-    reg_intervals(mpg ~ disp + wt, data = mtcars, type = "random"),
-    "`type` must be one of"
-  )
-  expect_error(
-    reg_intervals(mpg ~ disp + wt, data = mtcars, alpha = "a"),
-    "must be a single numeric value"
-  )
+  expect_equal(group_patterns(pctl_res), exp_combos)
+  expect_equal(group_patterns(t_res), exp_combos)
+  expect_equal(group_patterns(bca_res), exp_combos)
 })
+

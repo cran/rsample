@@ -52,13 +52,14 @@
 #' validation_set(cars_split_3)
 validation_split <- function(data, prop = 3 / 4,
                              strata = NULL, breaks = 4, pool = 0.1, ...) {
-  lifecycle::deprecate_soft(
+  lifecycle::deprecate_warn(
     "1.2.0",
     "validation_split()",
     "initial_validation_split()"
   )
 
   check_dots_empty()
+  check_prop(prop)
 
   if (!missing(strata)) {
     strata <- tidyselect::vars_select(names(data), !!enquo(strata))
@@ -67,7 +68,7 @@ validation_split <- function(data, prop = 3 / 4,
     }
   }
 
-  strata_check(strata, data)
+  check_strata(strata, data)
 
   split_objs <-
     mc_splits(
@@ -106,7 +107,7 @@ validation_split <- function(data, prop = 3 / 4,
 #' @inheritParams initial_time_split
 #' @export
 validation_time_split <- function(data, prop = 3 / 4, lag = 0, ...) {
-  lifecycle::deprecate_soft(
+  lifecycle::deprecate_warn(
     "1.2.0",
     "validation_time_split()",
     "initial_validation_time_split()"
@@ -114,6 +115,7 @@ validation_time_split <- function(data, prop = 3 / 4, lag = 0, ...) {
 
   check_dots_empty()
 
+  check_prop(prop)
   if (!is.numeric(prop) | prop >= 1 | prop <= 0) {
     rlang::abort("`prop` must be a number on (0, 1).")
   }
@@ -146,7 +148,7 @@ validation_time_split <- function(data, prop = 3 / 4, lag = 0, ...) {
 #' @inheritParams group_initial_split
 #' @export
 group_validation_split <- function(data, group, prop = 3 / 4, ..., strata = NULL, pool = 0.1) {
-  lifecycle::deprecate_soft(
+  lifecycle::deprecate_warn(
     "1.2.0",
     "group_validation_split()",
     "group_initial_validation_split()"
@@ -155,6 +157,7 @@ group_validation_split <- function(data, group, prop = 3 / 4, ..., strata = NULL
   check_dots_empty()
 
   group <- validate_group({{ group }}, data)
+  check_prop(prop)
 
   if (!missing(strata)) {
     strata <- check_grouped_strata({{ group }}, {{ strata }}, pool, data)

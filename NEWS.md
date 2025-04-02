@@ -1,3 +1,40 @@
+# rsample 1.3.0
+
+* Bootstrap intervals via `int_pctl()`, `int_t()`, and `int_bca()` now allow for more flexible grouping (#465).
+
+* Errors and warnings are now styled via cli (#499, #502). Largely done by @PriKalra (#523, #526, #528, #530, #531, #532), @Dpananos (#516, #517, #529), and @JamesHWade (#518) as part of the tidyverse dev day.
+
+* `rolling_origin()` is now superseded by `sliding_window()`, `sliding_index()`, and `sliding_period()` which provide more flexibility and control (@nmercadeb, #524).
+
+* The deprecation of `validation_split()`, `validation_time_split()`, and `group_validation_split()` has been moved to the next level so that they now warn.
+
+## Bug fixes
+
+* `vfold_cv()` now utilizes the `breaks` argument correctly for repeated cross-validation (@ZWael, #471).
+
+* Grouped resampling functions now work with an explicit `strata = NULL` instead of strata being either a name or missing (#485).
+
+## Breaking changes
+
+* `vfold_cv()` and `clustering_cv()` now error on implicit leave-one-out cross-validation (@seb09, #527).
+
+* The class of grouped MC splits is now `group_mc_split` instead of `grouped_mc_split`, aligning it with the other grouped splits (#478).
+
+* The `rsplit` objects of an `apparent()` split now have the correct class inheritance structure. The order is now `apparent_split` and then `rsplit` rather than the other way around (#477).
+
+## Documentation improvements
+
+* Improved documentation and formatting: function names are now more easily identifiable through either `()` at the end or being links to the function documentation (@brshallo , #521).
+
+* Fixed example for `nested_cv()` (@seb09, #520).
+
+* Formatting improvement: package names are now not in backticks anymore (@agmurray, #525).
+
+* Improved documentation for `initial_split()` and friends (@laurabrianna, #519).
+
+* Removed trailing space in printing of `mc_cv()` objects (@ccani007, #464).
+
+
 # rsample 1.2.1
 
 * `nested_cv()` no longer errors if `outside` is a long call (#459, #461).
@@ -125,7 +162,7 @@
 
 * The `reg_intervals()` function is a convenience function for `lm()`, `glm()`, `survreg()`, and `coxph()` models (#206). 
 
-* A few internal functions were exported so that `rsample`-adjacent packages can use the same underlying code. 
+* A few internal functions were exported so that rsample-adjacent packages can use the same underlying code. 
 
 * The `obj_sum()` method for `rsplit` objects was updated (#215).
 
@@ -146,11 +183,11 @@
 
 * The `print()` methods for `rsplit` and `val_split` objects were adjusted to show `"<Analysis/Assess/Total>"` and `<Training/Validation/Total>`, respectively. 
 
-* The `drinks`, `attrition`, and `two_class_dat` data sets were removed. They are in the `modeldata` package. 
+* The `drinks`, `attrition`, and `two_class_dat` data sets were removed. They are in the modeldata package. 
 
-* Compatability with `dplyr` 1.0.0.
+* Compatability with dplyr 1.0.0.
 
-# `rsample` 0.0.6
+# rsample 0.0.6
 
 * Added `validation_set()` for making a single resample.
 
@@ -162,7 +199,7 @@
 
 * `initial_time_split()` and `rolling_origin()` now have a `lag` parameter that ensures that previous data are available so that lagged variables can be calculated. (#135, #136)
 
-# `rsample` 0.0.5
+# rsample 0.0.5
 
 * Added three functions to compute different bootstrap confidence intervals. 
 * A new function (`add_resample_id()`) augments a data frame with columns for the resampling identifier. 
@@ -170,16 +207,16 @@
 * Updated `initial_split()`, `mc_cv()`, `vfold_cv()`, `bootstraps()` with new `breaks` parameter that specifies the number of bins to stratify by for a numeric stratification variable.
 
 
-# `rsample` 0.0.4
+# rsample 0.0.4
 
 Small maintenance release. 
 
 ## Minor improvements and fixes
 
  * `fill()` was removed per the deprecation warning. 
- * Small changes were made for the new version of `tibble`. 
+ * Small changes were made for the new version of tibble. 
 
-# `rsample` 0.0.3
+# rsample 0.0.3
 
 ## New features
 
@@ -191,25 +228,25 @@ Small maintenance release.
 
 * Changed the R version requirement to be R >= 3.1 instead of 3.3.3. 
 
-* The `recipes`-related `prepper` function was [moved to the `recipes` package](https://github.com/tidymodels/rsample/issues/48). This makes the `rsample` install footprint much smaller.
+* The recipes-related `prepper()` function was [moved to the recipes package](https://github.com/tidymodels/rsample/issues/48). This makes the rsample install footprint much smaller.
 
 * `rsplit` objects are shown differently inside of a tibble.
 
-* Moved from the `broom` package to the `generics` package.
+* Moved from the broom package to the generics package.
 
 
-# `rsample` 0.0.2
+# rsample 0.0.2
 
 * `initial_split`, `training`, and `testing` were added to do training/testing splits prior to resampling. 
 * Another resampling method, `group_vfold_cv`, was added. 
 * `caret2rsample` and `rsample2caret` can convert `rset` objects to those used by `caret::trainControl` and vice-versa. 
 * A function called `form_pred` can be used to determine the original names of the predictors in a formula or `terms` object. 
-* A vignette and a function (`prepper`) were included to facilitate using the `recipes` with `rsample`.
+* A vignette and a function (`prepper`) were included to facilitate using the recipes with rsample.
 * A `gather` method was added for `rset` objects.
 * A `labels` method was added for `rsplit` objects. This can help identify which resample is being used even when the whole `rset` object is not available. 
-* A variety of `dplyr` methods were added (e.g. `filter`, `mutate`, etc) that work without dropping classes or attributes of the `rsample` objects. 
+* A variety of dplyr methods were added (e.g. `filter()`, `mutate()`, etc) that work without dropping classes or attributes of the rsample objects. 
 
-# `rsample` 0.0.1 (2017-07-08)
+# rsample 0.0.1 (2017-07-08)
 
 Initial public version on CRAN
 

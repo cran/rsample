@@ -77,6 +77,47 @@
            <int>      <int> <int> <int> <chr>     
       1    37074      12926 50000     3 validation
 
+# bad args
+
+    Code
+      validation_split(mtcars, prop = 1)
+    Condition
+      Error in `validation_split()`:
+      ! `prop` must be less than 1.
+
+---
+
+    Code
+      validation_time_split(mtcars, prop = 1)
+    Condition
+      Error in `validation_time_split()`:
+      ! `prop` must be less than 1.
+
+---
+
+    Code
+      group_validation_split(mtcars, group = "cyl", prop = 1)
+    Condition
+      Error in `group_validation_split()`:
+      ! `prop` must be less than 1.
+
+---
+
+    Code
+      validation_split(warpbreaks, strata = warpbreaks$tension)
+    Condition
+      Error in `validation_split()`:
+      ! Can't select columns that don't exist.
+      x Columns `L`, `L`, `L`, `L`, `L`, etc. don't exist.
+
+---
+
+    Code
+      validation_split(warpbreaks, strata = c("tension", "wool"))
+    Condition
+      Error in `validation_split()`:
+      ! `strata` must be a single string or `NULL`, not a character vector.
+
 # printing
 
     Code

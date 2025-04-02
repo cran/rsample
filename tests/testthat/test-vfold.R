@@ -74,17 +74,64 @@ test_that("strata", {
   )
 })
 
+test_that("strata arg is checked", {
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, strata = iris$Species)
+  })
 
-test_that("bad args", {
-  expect_error(vfold_cv(iris, strata = iris$Species))
-  expect_error(vfold_cv(iris, strata = c("Species", "Sepal.Width")))
-  expect_snapshot_error(vfold_cv(iris, v = -500))
-  expect_snapshot_error(vfold_cv(iris, v = 1))
-  expect_snapshot_error(vfold_cv(iris, v = NULL))
-  expect_snapshot_error(vfold_cv(iris, v = 500))
-  expect_snapshot_error(vfold_cv(iris, v = 150, repeats = 2))
-  expect_snapshot_error(vfold_cv(Orange, repeats = 0))
-  expect_snapshot_error(vfold_cv(Orange, repeats = NULL))
+  # errors from `check_strata()`
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, strata = c("Species", "Sepal.Width"))
+  })
+
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, strata = NA)
+  })
+  
+  # make Surv object without a dependeny on the survival package
+  surv_obj <- structure(
+    c(306, 455, 1010, 210, 883, 1, 1, 0, 1, 1), 
+    dim = c(5L, 2L), 
+    dimnames = list(NULL, c("time", "status")),
+    type = "right", 
+    class = "Surv"
+  )
+  dat <- data.frame(a = 1:5)
+  # add Surv object like this for older R versions (<= 4.2.3)
+  dat$b <- surv_obj
+  expect_snapshot(error = TRUE, {
+    vfold_cv(dat, strata = b)
+  })
+})
+
+test_that("v arg is checked", {
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, v = -500)
+  })
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, v = 1)
+  })
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, v = NULL)
+  })
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, v = 500)
+  })
+  expect_snapshot(error = TRUE, {
+    vfold_cv(mtcars, v = nrow(mtcars))
+  })
+})
+
+test_that("repeats arg is checked", {
+  expect_snapshot(error = TRUE, {
+    vfold_cv(iris, v = 150, repeats = 2)
+  })
+  expect_snapshot(error = TRUE, {
+    vfold_cv(Orange, repeats = 0)
+  })
+  expect_snapshot(error = TRUE, {
+    vfold_cv(Orange, repeats = NULL)
+  })
 })
 
 test_that("printing", {
@@ -107,14 +154,30 @@ test_that("rsplit labels", {
 })
 
 test_that("grouping -- bad args", {
-  expect_error(group_vfold_cv(warpbreaks, group = warpbreaks$tension))
-  expect_error(group_vfold_cv(warpbreaks, group = c("tension", "wool")))
-  expect_error(group_vfold_cv(warpbreaks, group = "tensio"))
-  expect_error(group_vfold_cv(warpbreaks))
-  expect_error(group_vfold_cv(warpbreaks, group = "tension", v = 10))
-  expect_snapshot_error(group_vfold_cv(dat1, c, v = 4, repeats = 4))
-  expect_snapshot_error(group_vfold_cv(dat1, c, repeats = 4))
-  expect_snapshot(error = TRUE, group_vfold_cv(Orange, v = 1, group = "Tree"))
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(warpbreaks, group = warpbreaks$tension)
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(warpbreaks, group = c("tension", "wool"))
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(warpbreaks, group = "tensio")
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(warpbreaks)
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(warpbreaks, group = "tension", v = 10)
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(dat1, c, v = 4, repeats = 4)
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(dat1, c, repeats = 4)
+  })
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(Orange, v = 1, group = "Tree")
+  })
 })
 
 
@@ -143,6 +206,18 @@ test_that("grouping -- default param", {
   expect_true(all(table(sp_out) == 1))
 })
 
+test_that("grouping works with non-missing strata = NULL", {
+  set.seed(11)
+  rset_strata_missing <- group_vfold_cv(warpbreaks, "tension")
+
+  expect_no_error({
+    set.seed(11)
+    rset_strata_null <- group_vfold_cv(warpbreaks, "tension", strata = NULL)
+  })
+  
+  expect_identical(rset_strata_null, rset_strata_missing)
+
+})
 
 test_that("grouping -- v < max v", {
   set.seed(11)
@@ -272,7 +347,7 @@ test_that("grouping -- strata", {
   )
   expect_true(all(good_holdout))
 
-  expect_snapshot_warning(
+  expect_snapshot(
     group_vfold_cv(sample_data, group, strata = outcome)
   )
 
@@ -312,7 +387,7 @@ test_that("grouping -- strata", {
   )
   expect_true(all(good_holdout))
 
-  expect_snapshot_warning(
+  expect_snapshot(
     group_vfold_cv(sample_data, group, strata = outcome)
   )
 
@@ -329,6 +404,35 @@ test_that("grouping -- strata", {
     ),
     n_rare_class
   )
+})
+
+test_that("grouping fails for strata not constant across group members", {
+  set.seed(11)
+
+  n_common_class <- 70
+  n_rare_class <- 30
+
+  group_table <- tibble(
+    group = 1:100,
+    outcome = sample(c(rep(0, n_common_class), rep(1, n_rare_class)))
+  )
+  observation_table <- tibble(
+    group = sample(1:100, 1e5, replace = TRUE),
+    observation = 1:1e5
+  )
+  sample_data <- dplyr::full_join(
+    group_table,
+    observation_table,
+    by = "group",
+    multiple = "all"
+  )
+
+  # violate requirement
+  sample_data$outcome[1] <- ifelse(sample_data$outcome[1], 0, 1)
+
+  expect_snapshot(error = TRUE, {
+    group_vfold_cv(sample_data, group, v = 5, strata = outcome)
+  })
 })
 
 test_that("grouping -- repeated", {

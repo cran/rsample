@@ -17,7 +17,7 @@
 #' @param times The number of bootstrap samples.
 #' @param apparent A logical. Should an extra resample be added where the
 #'  analysis and holdout subset are the entire data set. This is required for
-#'  some estimators used by the `summary` function that require the apparent
+#'  some estimators used by the [summary()] function that require the apparent
 #'  error rate.
 #' @export
 #' @return A tibble with classes `bootstraps`, `rset`, `tbl_df`, `tbl`, and
@@ -76,7 +76,7 @@ bootstraps <-
       if (length(strata) == 0) strata <- NULL
     }
 
-    strata_check(strata, data)
+    check_strata(strata, data)
 
     split_objs <-
       boot_splits(
@@ -151,7 +151,7 @@ boot_splits <-
 
     all_assessable <- purrr::map(split_objs, function(x) nrow(assessment(x)))
     if (any(all_assessable == 0)) {
-      rlang::warn(
+      cli_warn(
         "Some assessment sets contained zero rows.",
         call = rlang::caller_env()
       )
@@ -276,7 +276,7 @@ group_boot_splits <- function(data, group, times = 25, strata = NULL, pool = 0.1
 
   all_assessable <- purrr::map(split_objs, function(x) nrow(assessment(x)))
   if (any(all_assessable == 0)) {
-    rlang::warn(
+    cli_warn(
       c(
         "Some assessment sets contained zero rows.",
         i = "Consider using a non-grouped resampling method."

@@ -57,7 +57,7 @@ clustering_cv <- function(data,
                           distance_function = "dist",
                           cluster_function = c("kmeans", "hclust"),
                           ...) {
-  check_repeats(repeats)
+  check_number_whole(repeats, min = 1)
 
   if (!rlang::is_function(cluster_function)) {
     cluster_function <- rlang::arg_match(cluster_function)
@@ -65,7 +65,7 @@ clustering_cv <- function(data,
 
   vars <- tidyselect::eval_select(rlang::enquo(vars), data = data)
   if (rlang::is_empty(vars)) {
-    rlang::abort("`vars` are required and must be variables in `data`.")
+    cli_abort("{.arg vars} is required and must contain at least one variable in {.arg data}.")
   }
   vars <- data[vars]
 

@@ -4,49 +4,53 @@
 # helpers
 
 
-check_rset <- function(x, app = TRUE) {
-  if (!inherits(x, "bootstraps")) {
-    rlang::abort("`.data` should be an `rset` object generated from `bootstraps()`")
-  }
-
-  if (app) {
-    if (x %>% dplyr::filter(id == "Apparent") %>% nrow() != 1) {
-      rlang::abort("Please set `apparent = TRUE` in `bootstraps()` function")
-    }
+check_includes_apparent <- function(x, call = caller_env()) {
+  if (x %>% dplyr::filter(id == "Apparent") %>% nrow() != 1) {
+    cli_abort(c(
+      "The bootstrap resamples must include an apparent sample.",
+      i =  "Please set {.code apparent = TRUE} in the {.fn bootstraps} function."
+      ), 
+      call = call
+    )
   }
   invisible(NULL)
 }
 
 
-stat_fmt_err <- paste("`statistics` should select a list column of tidy results.")
-stat_nm_err <- paste(
-  "The tibble in `statistics` should have columns for",
-  "'estimate' and 'term`"
+statistics_format_error <- cli::format_inline(
+  "{.arg statistics} should select a list column of tidy results."
 )
 std_exp <- c("std.error", "robust.se")
 
-check_tidy_names <- function(x, std_col) {
+check_statistics_names <- function(x, std_col, call = caller_env()) {
   # check for proper columns
   if (sum(colnames(x) == "estimate") != 1) {
-    rlang::abort(stat_nm_err)
+    cli_abort(
+      "The tibble in {.arg statistics} must have a column for 'estimate'.",
+      call = call
+    )
   }
   if (sum(colnames(x) == "term") != 1) {
-    rlang::abort(stat_nm_err)
+    cli_abort(
+       "The tibble in {.arg statistics} must have a column for 'term'.",
+       call = call
+    )
   }
   if (std_col) {
     std_candidates <- colnames(x) %in% std_exp
     if (sum(std_candidates) != 1) {
-      rlang::abort(
-        "`statistics` should select a single column for the standard error."
+      cli_abort(
+        "{.arg statistics} should select a single column for the standard error.",
+        call = call
       )
     }
   }
   invisible(TRUE)
 }
 
-check_tidy <- function(x, std_col = FALSE) {
+check_statistics <- function(x, std_col = FALSE, call = caller_env()) {
   if (!is.list(x)) {
-    rlang::abort(stat_fmt_err)
+    cli_abort(statistics_format_error, call = call)
   }
 
   # convert to data frame from list
@@ -59,32 +63,35 @@ check_tidy <- function(x, std_col = FALSE) {
   }
 
   if (inherits(x, "try-error")) {
-    rlang::abort(stat_fmt_err)
+    cli_abort(statistics_format_error, call = call)
   }
 
-  check_tidy_names(x, std_col)
+  check_statistics_names(x, std_col, call = call)
 
   if (std_col) {
     std_candidates <- colnames(x) %in% std_exp
     std_candidates <- colnames(x)[std_candidates]
+    re_name <- list(std_err = std_candidates)
     if (has_id) {
       x <-
-        dplyr::select(x, term, estimate, id, tidyselect::one_of(std_candidates)) %>%
-        mutate(id = (id == "Apparent")) %>%
-        setNames(c("term", "estimate", "orig", "std_err"))
+        dplyr::select(x, term, estimate, id, tidyselect::one_of(std_candidates),
+                      dplyr::starts_with(".")) %>%
+        mutate(orig = (id == "Apparent"))  %>%
+        dplyr::rename(!!!re_name)
     } else {
       x <-
-        dplyr::select(x, term, estimate, tidyselect::one_of(std_candidates)) %>%
-        setNames(c("term", "estimate", "std_err"))
+        dplyr::select(x, term, estimate, tidyselect::one_of(std_candidates),
+                      dplyr::starts_with(".")) %>%
+        dplyr::rename(!!!re_name)
     }
   } else {
     if (has_id) {
       x <-
-        dplyr::select(x, term, estimate, id) %>%
+        dplyr::select(x, term, estimate, id, dplyr::starts_with(".")) %>%
         mutate(orig = (id == "Apparent")) %>%
         dplyr::select(-id)
     } else {
-      x <- dplyr::select(x, term, estimate)
+      x <- dplyr::select(x, term, estimate, dplyr::starts_with("."))
     }
   }
 
@@ -92,16 +99,18 @@ check_tidy <- function(x, std_col = FALSE) {
 }
 
 
-get_p0 <- function(x, alpha = 0.05) {
+get_p0 <- function(x, alpha = 0.05, groups) {
+  group_sym <- rlang::syms(groups)
+
   orig <- x %>%
-    group_by(term) %>%
+    group_by(!!!group_sym) %>%
     dplyr::filter(orig) %>%
-    dplyr::select(term, theta_0 = estimate) %>%
+    dplyr::select(!!!group_sym, theta_0 = estimate) %>%
     ungroup()
   x %>%
     dplyr::filter(!orig) %>%
-    inner_join(orig, by = "term") %>%
-    group_by(term) %>%
+    inner_join(orig, by = groups) %>%
+    group_by(!!!group_sym) %>%
     summarize(p0 = mean(estimate <= theta_0, na.rm = TRUE)) %>%
     mutate(
       Z0 = stats::qnorm(p0),
@@ -114,15 +123,15 @@ new_stats <- function(x, lo, hi) {
   tibble(.lower = min(res), .estimate = mean(x, na.rm = TRUE), .upper = max(res))
 }
 
-has_dots <- function(x) {
+check_has_dots <- function(x, call = caller_env()) {
   nms <- names(formals(x))
   if (!any(nms == "...")) {
-    rlang::abort("`.fn` must have an argument `...`.")
+    cli_abort("{.arg .fn} must have an argument {.arg ...}.", call = call)
   }
   invisible(NULL)
 }
 
-check_num_resamples <- function(x, B = 1000) {
+check_num_resamples <- function(x, B = 1000, call = caller_env()) {
   x <-
     x %>%
     dplyr::group_by(term) %>%
@@ -130,15 +139,11 @@ check_num_resamples <- function(x, B = 1000) {
     dplyr::filter(n < B)
 
   if (nrow(x) > 0) {
-    terms <- paste0("`", x$term, "`")
-    msg <-
-      paste0(
-        "Recommend at least ", B, " non-missing bootstrap resamples for ",
-        ifelse(length(terms) > 1, "terms: ", "term "),
-        paste0(terms, collapse = ", "),
-        "."
-      )
-    rlang::warn(msg)
+    terms <- x$term
+    cli_warn(
+      "Recommend at least {B} non-missing bootstrap resamples for {cli::qty(terms)} term{?s} {.code {terms}}.",
+       call = call
+    )
   }
   invisible(NULL)
 }
@@ -149,11 +154,11 @@ check_num_resamples <- function(x, B = 1000) {
 
 pctl_single <- function(stats, alpha = 0.05) {
   if (all(is.na(stats))) {
-    rlang::abort("All statistics have missing values..")
+    cli_abort("All statistics have missing values.", call = call2("int_pctl"))
   }
 
   if (!is.numeric(stats)) {
-    rlang::abort("`stats` must be a numeric vector.")
+    cli_abort("All statistics must be numeric.", call = call2("int_pctl"))
   }
 
   # stats is a numeric vector of values
@@ -173,17 +178,18 @@ pctl_single <- function(stats, alpha = 0.05) {
 #' Bootstrap confidence intervals
 #' @description
 #' Calculate bootstrap confidence intervals using various methods.
-#' @param .data A data frame containing the bootstrap resamples created using
-#'  `bootstraps()`. For t- and BCa-intervals, the `apparent` argument
+#' @param .data A object containing the bootstrap resamples, created using
+#'  [bootstraps()]. For t- and BCa-intervals, the `apparent` argument
 #'  should be set to `TRUE`. Even if the `apparent` argument is set to
 #'  `TRUE` for the percentile method, the apparent data is never used in calculating
 #'  the percentile confidence interval.
 #' @param statistics An unquoted column name or `dplyr` selector that identifies
 #'  a single column in the data set containing the individual bootstrap
 #'  estimates. This must be a list column of tidy tibbles (with columns
-#'  `term` and `estimate`). For t-intervals, a
-#'  standard tidy column (usually called `std.err`) is required.
-#'  See the examples below.
+#'  `term` and `estimate`). Optionally, users can include columns whose names
+#'  begin with a period and the intervals will be created for each combination
+#'  of these variables and the `term` column. For t-intervals, a standard tidy
+#'  column (usually called `std.error`) is required. See the examples below.
 #' @param alpha Level of significance.
 #' @param .fn A function to calculate statistic of interest. The
 #'  function should take an `rsplit` as the first argument and the `...` are
@@ -209,12 +215,15 @@ pctl_single <- function(stats, alpha = 0.05) {
 #'  Application_. Cambridge: Cambridge University Press.
 #'  doi:10.1017/CBO9780511802843
 #'
-#' @examplesIf rlang::is_installed("broom")
+#' @examplesIf rlang::is_installed("broom") & rlang::is_installed("modeldata")
 #' \donttest{
 #' library(broom)
 #' library(dplyr)
 #' library(purrr)
 #' library(tibble)
+#' library(tidyr)
+#'
+#' # ------------------------------------------------------------------------------
 #'
 #' lm_est <- function(split, ...) {
 #'   lm(mpg ~ disp + hp, data = analysis(split)) %>%
@@ -230,14 +239,16 @@ pctl_single <- function(stats, alpha = 0.05) {
 #' int_t(car_rs, results)
 #' int_bca(car_rs, results, .fn = lm_est)
 #'
+#' # ------------------------------------------------------------------------------
+#'
 #' # putting results into a tidy format
 #' rank_corr <- function(split) {
 #'   dat <- analysis(split)
 #'   tibble(
 #'     term = "corr",
 #'     estimate = cor(dat$sqft, dat$price, method = "spearman"),
-#'     # don't know the analytical std.err so no t-intervals
-#'     std.err = NA_real_
+#'     # don't know the analytical std.error so no t-intervals
+#'     std.error = NA_real_
 #'   )
 #' }
 #'
@@ -246,6 +257,31 @@ pctl_single <- function(stats, alpha = 0.05) {
 #' bootstraps(Sacramento, 1000, apparent = TRUE) %>%
 #'   mutate(correlations = map(splits, rank_corr)) %>%
 #'   int_pctl(correlations)
+#'
+#' # ------------------------------------------------------------------------------
+#' # An example of computing the interval for each value of a custom grouping
+#' # factor (type of house in this example)
+#'
+#' # Get regression estimates for each house type
+#' lm_est <- function(split, ...) {
+#'   analysis(split) %>%
+#'     tidyr::nest(.by = c(type)) %>%
+#'     # Compute regression estimates for each house type
+#'     mutate(
+#'       betas = purrr::map(data, ~ lm(log10(price) ~ sqft, data = .x) %>% tidy())
+#'     ) %>%
+#'     # Convert the column name to begin with a period
+#'     rename(.type = type) %>%
+#'     select(.type, betas) %>%
+#'     unnest(cols = betas)
+#' }
+#'
+#' set.seed(52156)
+#' house_rs <-
+#'   bootstraps(Sacramento, 1000, apparent = TRUE) %>%
+#'   mutate(results = map(splits, lm_est))
+#'
+#' int_pctl(house_rs, results)
 #' }
 #' @export
 int_pctl <- function(.data, ...) {
@@ -254,26 +290,35 @@ int_pctl <- function(.data, ...) {
 
 #' @export
 #' @rdname int_pctl
+int_pctl.default <- function(.data, ...) {
+  cls <- class(.data)
+  cli_abort(
+    "No method for objects of class{?es}: {.cls {cls}}"
+  )
+}
+
+#' @export
+#' @rdname int_pctl
 int_pctl.bootstraps <- function(.data, statistics, alpha = 0.05, ...) {
   check_dots_empty()
-  check_rset(.data, app = FALSE)
-  if (length(alpha) != 1 || !is.numeric(alpha)) {
-    abort("`alpha` must be a single numeric value.")
-  }
+  check_number_decimal(alpha, min = 0, max = 1)
 
   .data <- .data %>% dplyr::filter(id != "Apparent")
 
   column_name <- tidyselect::vars_select(names(.data), !!rlang::enquo(statistics))
   if (length(column_name) != 1) {
-    rlang::abort(stat_fmt_err)
+    cli_abort(statistics_format_error)
   }
   stats <- .data[[column_name]]
-  stats <- check_tidy(stats, std_col = FALSE)
+  stats <- check_statistics(stats, std_col = FALSE)
 
   check_num_resamples(stats, B = 1000)
 
+  stat_groups <- c("term", grep("^\\.", names(stats), value = TRUE))
+  stat_groups <- rlang::syms(stat_groups)
+
   vals <- stats %>%
-    dplyr::group_by(term) %>%
+    dplyr::group_by(!!!stat_groups) %>%
     dplyr::do(pctl_single(.$estimate, alpha = alpha)) %>%
     dplyr::ungroup()
   vals
@@ -289,19 +334,20 @@ t_single <- function(stats, std_err, is_orig, alpha = 0.05) {
   # which_orig is the index of stats and std_err that has the original result
 
   if (all(is.na(stats))) {
-    rlang::abort("All statistics have missing values.")
+    cli_abort("All statistics have missing values.", call = call2("int_t"))
   }
 
   if (!is.logical(is_orig) || any(is.na(is_orig))) {
-    rlang::abort(
-      "`is_orig` should be a logical column the same length as `stats` with no missing values."
+    cli_abort(
+      "{.arg is_orig} should be a logical column the same length as {.arg stats} with no missing values."
     )
   }
   if (length(stats) != length(std_err) && length(stats) != length(is_orig)) {
-    rlang::abort("`stats`, `std_err`, and `is_orig` should have the same length.")
+    function_args <- c('stats', 'std_err', 'is_orig')
+    cli_abort("{.arg {function_args}} should have the same length.")
   }
   if (sum(is_orig) != 1) {
-    rlang::abort("The original statistic must be in a single row.")
+    cli_abort("The original statistic must be in a single row.")
   }
 
   theta_obs <- stats[is_orig]
@@ -333,27 +379,35 @@ int_t <- function(.data, ...) {
   UseMethod("int_t")
 }
 
+#' @export
+#' @rdname int_pctl
+int_t.default <- function(.data, ...) {
+  cls <- class(.data)
+  cli_abort(
+    "No method for objects of class{?es}: {.cls {cls}}"
+  )
+}
+
 #' @rdname int_pctl
 #' @export
 int_t.bootstraps <- function(.data, statistics, alpha = 0.05, ...) {
   check_dots_empty()
-  check_rset(.data)
-  if (length(alpha) != 1 || !is.numeric(alpha)) {
-    abort("`alpha` must be a single numeric value.")
-  }
+  check_includes_apparent(.data)
+  check_number_decimal(alpha, min = 0, max = 1)
 
   column_name <- tidyselect::vars_select(names(.data), !!enquo(statistics))
   if (length(column_name) != 1) {
-    rlang::abort(stat_fmt_err)
+    cli_abort(statistics_format_error)
   }
   stats <- .data %>% dplyr::select(!!column_name, id)
-  stats <- check_tidy(stats, std_col = TRUE)
+  stats <- check_statistics(stats, std_col = TRUE)
 
   check_num_resamples(stats, B = 500)
 
-  vals <-
-    stats %>%
-    dplyr::group_by(term) %>%
+  stat_groups <- c("term", grep("^\\.", names(stats), value = TRUE))
+  stat_groups <- rlang::syms(stat_groups)
+  vals <- stats %>%
+    dplyr::group_by(!!!stat_groups) %>%
     dplyr::do(t_single(.$estimate, .$std_err, .$orig, alpha = alpha)) %>%
     dplyr::ungroup()
   vals
@@ -362,15 +416,18 @@ int_t.bootstraps <- function(.data, statistics, alpha = 0.05, ...) {
 
 # ----------------------------------------------------------------
 
-bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
+bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ..., call = caller_env()) {
 
   # TODO check per term
   if (all(is.na(stats$estimate))) {
-    rlang::abort("All statistics have missing values.")
+    cli_abort("All statistics have missing values.", call = call)
   }
 
+  stat_groups_chr <- c("term", grep("^\\.", names(stats), value = TRUE))
+  stat_groups_sym <- rlang::syms(stat_groups_chr)
+
   ### Estimating Z0 bias-correction
-  bias_corr_stats <- get_p0(stats, alpha = alpha)
+  bias_corr_stats <- get_p0(stats, alpha = alpha, groups = stat_groups_chr)
 
   # need the original data frame here
   loo_rs <- loo_cv(orig_data)
@@ -379,25 +436,25 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
   # To test, we run on the first LOO data set and see if it is a vector or df
   loo_test <- try(rlang::exec(.fn, loo_rs$splits[[1]], ...), silent = TRUE)
   if (inherits(loo_test, "try-error")) {
-    cat("Running `.fn` on the LOO resamples produced an error:\n")
+    cli_text("Running {.fn .fn} on the LOO resamples produced an error:")
     print(loo_test)
-    rlang::abort("`.fn` failed.")
+    cli_abort("{.arg .fn} failed.", call = call)
   }
 
   loo_res <- furrr::future_map(loo_rs$splits, .fn, ...) %>% list_rbind()
 
   loo_estimate <-
     loo_res %>%
-    dplyr::group_by(term) %>%
+    dplyr::group_by(!!!stat_groups_sym) %>%
     dplyr::summarize(loo = mean(estimate, na.rm = TRUE)) %>%
-    dplyr::inner_join(loo_res, by = "term", multiple = "all") %>%
-    dplyr::group_by(term) %>%
+    dplyr::inner_join(loo_res, by = stat_groups_chr, multiple = "all") %>%
+    dplyr::group_by(!!!stat_groups_sym) %>%
     dplyr::summarize(
       cubed = sum((loo - estimate)^3),
       squared = sum((loo - estimate)^2)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::inner_join(bias_corr_stats, by = "term") %>%
+    dplyr::inner_join(bias_corr_stats, by = stat_groups_chr) %>%
     dplyr::mutate(
       a = cubed / (6 * (squared^(3 / 2))),
       Zu = (Z0 + Za) / (1 - a * (Z0 + Za)) + Z0,
@@ -408,21 +465,25 @@ bca_calc <- function(stats, orig_data, alpha = 0.05, .fn, ...) {
 
   terms <- loo_estimate$term
   stats <- stats %>% dplyr::filter(!orig)
-  for (i in seq_along(terms)) {
-    tmp <- new_stats(stats$estimate[stats$term == terms[i]],
-                     lo = loo_estimate$lo[i],
-                     hi = loo_estimate$hi[i]
-    )
-    tmp$term <- terms[i]
+
+  keys <- stats %>% dplyr::distinct(!!!stat_groups_sym)
+  for (i in seq_len(nrow(keys))) {
+    tmp_stats <- dplyr::inner_join(stats, keys[i,], by = stat_groups_chr)
+    tmp_loo <- dplyr::inner_join(loo_estimate, keys[i,], by = stat_groups_chr)
+
+    tmp <- new_stats(tmp_stats$estimate,
+                     lo = tmp_loo$lo,
+                     hi = tmp_loo$hi)
+    tmp <- dplyr::bind_cols(tmp, keys[i,])
     if (i == 1) {
       ci_bca <- tmp
     } else {
-      ci_bca <- bind_rows(ci_bca, tmp)
+      ci_bca <- dplyr::bind_rows(ci_bca, tmp)
     }
   }
   ci_bca <-
     ci_bca %>%
-    dplyr::select(term, .lower, .estimate, .upper) %>%
+    dplyr::select(!!!stat_groups_sym, .lower, .estimate, .upper) %>%
     dplyr::mutate(
       .alpha = alpha,
       .method = "BCa"
@@ -435,22 +496,29 @@ int_bca <- function(.data, ...) {
   UseMethod("int_bca")
 }
 
+#' @export
+#' @rdname int_pctl
+int_bca.default <- function(.data, ...) {
+  cls <- class(.data)
+  cli_abort(
+    "No method for objects of class{?es}: {.cls {cls}}"
+  )
+}
+
 #' @rdname int_pctl
 #' @export
 int_bca.bootstraps <- function(.data, statistics, alpha = 0.05, .fn, ...) {
-  check_rset(.data)
-  if (length(alpha) != 1 || !is.numeric(alpha)) {
-    abort("`alpha` must be a single numeric value.")
-  }
+  check_includes_apparent(.data)
+  check_number_decimal(alpha, min = 0, max = 1)
 
-  has_dots(.fn)
+  check_has_dots(.fn)
 
   column_name <- tidyselect::vars_select(names(.data), !!enquo(statistics))
   if (length(column_name) != 1) {
-    rlang::abort(stat_fmt_err)
+    cli_abort(statistics_format_error)
   }
-  stats <- .data %>% dplyr::select(!!column_name, id)
-  stats <- check_tidy(stats)
+  stats <- .data %>% dplyr::select(!!column_name, id, dplyr::starts_with("."))
+  stats <- check_statistics(stats)
 
   check_num_resamples(stats, B = 1000)
 

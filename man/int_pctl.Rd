@@ -2,28 +2,37 @@
 % Please edit documentation in R/bootci.R
 \name{int_pctl}
 \alias{int_pctl}
+\alias{int_pctl.default}
 \alias{int_pctl.bootstraps}
 \alias{int_t}
+\alias{int_t.default}
 \alias{int_t.bootstraps}
 \alias{int_bca}
+\alias{int_bca.default}
 \alias{int_bca.bootstraps}
 \title{Bootstrap confidence intervals}
 \usage{
 int_pctl(.data, ...)
 
+\method{int_pctl}{default}(.data, ...)
+
 \method{int_pctl}{bootstraps}(.data, statistics, alpha = 0.05, ...)
 
 int_t(.data, ...)
+
+\method{int_t}{default}(.data, ...)
 
 \method{int_t}{bootstraps}(.data, statistics, alpha = 0.05, ...)
 
 int_bca(.data, ...)
 
+\method{int_bca}{default}(.data, ...)
+
 \method{int_bca}{bootstraps}(.data, statistics, alpha = 0.05, .fn, ...)
 }
 \arguments{
-\item{.data}{A data frame containing the bootstrap resamples created using
-\code{bootstraps()}. For t- and BCa-intervals, the \code{apparent} argument
+\item{.data}{A object containing the bootstrap resamples, created using
+\code{\link[=bootstraps]{bootstraps()}}. For t- and BCa-intervals, the \code{apparent} argument
 should be set to \code{TRUE}. Even if the \code{apparent} argument is set to
 \code{TRUE} for the percentile method, the apparent data is never used in calculating
 the percentile confidence interval.}
@@ -33,9 +42,10 @@ the percentile confidence interval.}
 \item{statistics}{An unquoted column name or \code{dplyr} selector that identifies
 a single column in the data set containing the individual bootstrap
 estimates. This must be a list column of tidy tibbles (with columns
-\code{term} and \code{estimate}). For t-intervals, a
-standard tidy column (usually called \code{std.err}) is required.
-See the examples below.}
+\code{term} and \code{estimate}). Optionally, users can include columns whose names
+begin with a period and the intervals will be created for each combination
+of these variables and the \code{term} column. For t-intervals, a standard tidy
+column (usually called \code{std.error}) is required. See the examples below.}
 
 \item{alpha}{Level of significance.}
 
@@ -65,12 +75,15 @@ that was used to create the statistics of interest and are
 computationally taxing.
 }
 \examples{
-\dontshow{if (rlang::is_installed("broom")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (rlang::is_installed("broom") & rlang::is_installed("modeldata")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 \donttest{
 library(broom)
 library(dplyr)
 library(purrr)
 library(tibble)
+library(tidyr)
+
+# ------------------------------------------------------------------------------
 
 lm_est <- function(split, ...) {
   lm(mpg ~ disp + hp, data = analysis(split)) \%>\%
@@ -86,14 +99,16 @@ int_pctl(car_rs, results)
 int_t(car_rs, results)
 int_bca(car_rs, results, .fn = lm_est)
 
+# ------------------------------------------------------------------------------
+
 # putting results into a tidy format
 rank_corr <- function(split) {
   dat <- analysis(split)
   tibble(
     term = "corr",
     estimate = cor(dat$sqft, dat$price, method = "spearman"),
-    # don't know the analytical std.err so no t-intervals
-    std.err = NA_real_
+    # don't know the analytical std.error so no t-intervals
+    std.error = NA_real_
   )
 }
 
@@ -102,6 +117,31 @@ data(Sacramento, package = "modeldata")
 bootstraps(Sacramento, 1000, apparent = TRUE) \%>\%
   mutate(correlations = map(splits, rank_corr)) \%>\%
   int_pctl(correlations)
+
+# ------------------------------------------------------------------------------
+# An example of computing the interval for each value of a custom grouping
+# factor (type of house in this example)
+
+# Get regression estimates for each house type
+lm_est <- function(split, ...) {
+  analysis(split) \%>\%
+    tidyr::nest(.by = c(type)) \%>\%
+    # Compute regression estimates for each house type
+    mutate(
+      betas = purrr::map(data, ~ lm(log10(price) ~ sqft, data = .x) \%>\% tidy())
+    ) \%>\%
+    # Convert the column name to begin with a period
+    rename(.type = type) \%>\%
+    select(.type, betas) \%>\%
+    unnest(cols = betas)
+}
+
+set.seed(52156)
+house_rs <-
+  bootstraps(Sacramento, 1000, apparent = TRUE) \%>\%
+  mutate(results = map(splits, lm_est))
+
+int_pctl(house_rs, results)
 }
 \dontshow{\}) # examplesIf}
 }

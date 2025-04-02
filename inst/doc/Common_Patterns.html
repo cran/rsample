@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -501,7 +501,7 @@ this as many times as you want.</p>
 <p>To use Monte-Carlo cross-validation in rsample, use the
 <code>mc_cv()</code> function:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">mc_cv</span>(ames, <span class="at">prop =</span> <span class="fl">0.8</span>, <span class="at">times =</span> <span class="dv">2</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; # Monte Carlo cross-validation (0.8/0.2) with 2 resamples  </span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; # Monte Carlo cross-validation (0.8/0.2) with 2 resamples </span></span>
 <span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
 <span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;   splits             id       </span></span>
 <span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt;   &lt;list&gt;             &lt;chr&gt;    </span></span>
@@ -721,15 +721,17 @@ for instance to have each window contain a year of data, you can use
 the start and end of the analysis set “sliding” down your data frame. If
 you’d rather have your analysis set get progressively larger, so that
 you’re predicting new data based upon a growing set of older
-observations, you can use the <code>rolling_origin()</code>
-function:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="fu">rolling_origin</span>(Chicago) <span class="sc">%&gt;%</span></span>
+observations, you can use the <code>sliding_window()</code> function
+with <code>lookback = -Inf</code>:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="fu">sliding_window</span>(Chicago, <span class="at">lookback =</span> <span class="cn">Inf</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">2</span>)</span>
 <span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
 <span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="co">#&gt;   splits        id       </span></span>
 <span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a><span class="co">#&gt;   &lt;list&gt;        &lt;chr&gt;    </span></span>
-<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co">#&gt; 1 &lt;split [5/1]&gt; Slice0001</span></span>
-<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="co">#&gt; 2 &lt;split [6/1]&gt; Slice0002</span></span></code></pre></div>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co">#&gt; 1 &lt;split [1/1]&gt; Slice0001</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="co">#&gt; 2 &lt;split [2/1]&gt; Slice0002</span></span></code></pre></div>
+<p>This is commonly referred to as “evaluation on a rolling forecasting
+origin”, or more colloquially, “rolling origin cross-validation”.</p>
 <p>Note that all of these time-based resampling functions are
 deterministic: unlike the rest of the package, running these functions
 repeatedly under different random seeds will always return the same

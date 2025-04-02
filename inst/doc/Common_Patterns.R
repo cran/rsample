@@ -93,6 +93,6 @@ sliding_period(Chicago, date, "year") %>%
   head(2)
 
 ## -----------------------------------------------------------------------------
-rolling_origin(Chicago) %>%
+sliding_window(Chicago, lookback = Inf) %>%
   head(2)
 

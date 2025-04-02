@@ -1,9 +1,42 @@
+# bad args
+
+    Code
+      mc_cv(mtcars, prop = -1)
+    Condition
+      Error in `mc_cv()`:
+      ! `prop` must be greater than 0.
+
+---
+
+    Code
+      mc_cv(mtcars, prop = 1)
+    Condition
+      Error in `mc_cv()`:
+      ! `prop` must be less than 1.
+
+---
+
+    Code
+      mc_cv(warpbreaks, strata = warpbreaks$tension)
+    Condition
+      Error in `mc_cv()`:
+      ! Can't select columns that don't exist.
+      x Columns `L`, `L`, `L`, `L`, `L`, etc. don't exist.
+
+---
+
+    Code
+      mc_cv(warpbreaks, strata = c("tension", "wool"))
+    Condition
+      Error in `mc_cv()`:
+      ! `strata` must be a single string or `NULL`, not a character vector.
+
 # printing
 
     Code
       mc_cv(warpbreaks)
     Output
-      # Monte Carlo cross-validation (0.75/0.25) with 25 resamples  
+      # Monte Carlo cross-validation (0.75/0.25) with 25 resamples 
       # A tibble: 25 x 2
          splits          id        
          <list>          <chr>     
@@ -20,6 +53,58 @@
       # i 15 more rows
 
 # grouping - bad args
+
+    Code
+      group_mc_cv(warpbreaks, group = warpbreaks$tension)
+    Condition
+      Error in `validate_group()`:
+      ! Can't select columns that don't exist.
+      x Columns `L`, `L`, `L`, `L`, `L`, etc. don't exist.
+
+---
+
+    Code
+      group_mc_cv(warpbreaks, group = c("tension", "wool"))
+    Condition
+      Error in `group_mc_cv()`:
+      ! `group` must be a single string, not a character vector.
+
+---
+
+    Code
+      group_mc_cv(warpbreaks, group = "tensio")
+    Condition
+      Error in `validate_group()`:
+      ! Can't select columns that don't exist.
+      x Column `tensio` doesn't exist.
+
+---
+
+    Code
+      group_mc_cv(warpbreaks)
+    Condition
+      Error in `group_mc_cv()`:
+      ! `group` must be a single string, not `NULL`.
+
+---
+
+    Code
+      group_mc_cv(mtcars, group = "cyl", prop = 1)
+    Condition
+      Error in `group_mc_cv()`:
+      ! `prop` must be less than 1.
+
+---
+
+    Code
+      group_mc_cv(warpbreaks, group = "tension", balance = "groups")
+    Condition
+      Error in `group_mc_cv()`:
+      ! `...` must be empty.
+      x Problematic argument:
+      * balance = "groups"
+
+---
 
     Code
       group_mc_cv(warpbreaks, group = "tension", prop = 0.99)
