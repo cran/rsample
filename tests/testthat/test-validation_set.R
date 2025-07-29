@@ -29,7 +29,7 @@ test_that("accessor functions for `val_split`", {
 
   set.seed(11)
   initial_val_split <- initial_validation_split(dat1, prop = c(0.6, 0.2))
-  val_split <- validation_set(initial_val_split) %>% get_rsplit(1)
+  val_split <- validation_set(initial_val_split) |> get_rsplit(1)
 
   expect_equal(analysis(val_split), training(initial_val_split))
   expect_equal(training(val_split), training(initial_val_split))
@@ -40,23 +40,49 @@ test_that("accessor functions for `val_split`", {
 
 
 test_that("working with Surv objects - issue #443", {
-
   srv <-
     list(
       age = c(74, 68, 56, 57, 60, 74, 76, 77, 39, 75, 66, 58),
       sex = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2),
       surv_obj = structure(
-        c(306, 455, 1010, 210, 883, 1022, 116, 188,  191, 105, 174,  177,
-          1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0),
+        c(
+          306,
+          455,
+          1010,
+          210,
+          883,
+          1022,
+          116,
+          188,
+          191,
+          105,
+          174,
+          177,
+          1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ),
         dim = c(12L, 2L),
         dimnames = list(NULL, c("time", "status")),
         type = "right",
-        class = "Surv"))
+        class = "Surv"
+      )
+    )
   surv_df <-
     structure(
       srv,
       row.names = paste(1:12),
-      class = "data.frame")
+      class = "data.frame"
+    )
 
   surv_tbl <- dplyr::as_tibble(surv_df)
 

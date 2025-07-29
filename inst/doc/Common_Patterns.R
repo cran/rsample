@@ -1,15 +1,12 @@
-## ----include = FALSE----------------------------------------------------------
+## -----------------------------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   eval = rlang::is_installed("modeldata")
 )
 
-## ----setup--------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(rsample)
-
-## ----message=FALSE------------------------------------------------------------
-library(dplyr)
 
 ## -----------------------------------------------------------------------------
 data(ames, package = "modeldata")
@@ -81,18 +78,18 @@ initial_time_split(Chicago)
 initial_validation_time_split(Chicago)
 
 ## -----------------------------------------------------------------------------
-sliding_window(Chicago) %>%
+sliding_window(Chicago) |>
   head(2)
 
 ## -----------------------------------------------------------------------------
-sliding_index(Chicago, date) %>%
+sliding_index(Chicago, date) |>
   head(2)
 
 ## -----------------------------------------------------------------------------
-sliding_period(Chicago, date, "year") %>%
+sliding_period(Chicago, date, "year") |>
   head(2)
 
 ## -----------------------------------------------------------------------------
-sliding_window(Chicago, lookback = Inf) %>%
+sliding_window(Chicago, lookback = Inf) |>
   head(2)
 
