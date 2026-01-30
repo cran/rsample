@@ -31,9 +31,9 @@ of stratifying groups that are too small.}
 
 \item{...}{These dots are for future extensions and must be empty.}
 
-\item{lag}{A value to include a lag between the assessment
-and analysis set. This is useful if lagged predictors will be used
-during training and testing.}
+\item{lag}{A value to include a lag between the assessment and analysis set.
+This is useful if lagged predictors will be used during training and
+testing.}
 
 \item{group}{A variable in \code{data} (single character or name) used for
 grouping observations with the same value to either the analysis or
@@ -79,7 +79,7 @@ which are then used to stratify. Strata below 10\% of the total are
 pooled together; see \code{\link[=make_strata]{make_strata()}} for more details.
 }
 \examples{
-\dontshow{if (rlang::is_installed("modeldata")) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (rlang::is_installed("modeldata")) withAutoprint(\{ # examplesIf}
 cars_split <- initial_split(mtcars)
 cars_not_testing <- training(cars_split)
 validation_split(cars_not_testing, prop = .9)

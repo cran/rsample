@@ -1,6 +1,6 @@
 Package: rsample
 Title: General Resampling Infrastructure
-Version: 1.3.1
+Version: 1.3.2
 Authors@R: c(
     person("Hannah", "Frick", , "hannah@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-6049-5258")),
@@ -33,9 +33,9 @@ Config/Needs/website: GGally, nlstools, tidymodels,
 Config/testthat/edition: 3
 Config/usethis/last-upkeep: 2025-04-23
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2025-07-29 13:06:28 UTC; hannah
+Packaged: 2026-01-29 18:32:44 UTC; hannah
 Author: Hannah Frick [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-6049-5258>),
   Fanny Chow [aut],
@@ -46,4 +46,4 @@ Author: Hannah Frick [aut, cre] (ORCID:
   Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)
 Maintainer: Hannah Frick <hannah@posit.co>
 Repository: CRAN
-Date/Publication: 2025-07-29 13:50:02 UTC
+Date/Publication: 2026-01-30 06:10:15 UTC
